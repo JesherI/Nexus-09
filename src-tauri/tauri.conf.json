@@ -12,9 +12,10 @@
   "app": {
     "windows": [
       {
-        "title": "nexus-09",
-        "width": 800,
-        "height": 600
+        "title": "Nexus 09",
+        "maximized": true,
+        "decorations": false,
+        "transparent": true
       }
     ],
     "security": {
