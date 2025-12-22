@@ -1,74 +1,47 @@
-import { useState } from "react";
-import reactLogo from "./assets/react.svg";
-import { invoke } from "@tauri-apps/api/core";
+import { useTranslation } from "react-i18next";
 import "./App.css";
+import LanguageSelector from "./components/LanguageSelector";
 
 function App() {
-  const [greetMsg, setGreetMsg] = useState("");
-  const [name, setName] = useState("");
-
-  async function greet() {
-    setGreetMsg(await invoke("greet", { name }));
-  }
+  const { t } = useTranslation();
 
   return (
-    <main className="min-h-screen bg-slate-950 text-white flex flex-col items-center justify-center p-8 font-sans">
-      {/* Background Decorativo */}
-      <div className="absolute top-0 -z-10 h-full w-full bg-slate-950">
-        <div className="absolute bottom-auto left-auto right-0 top-0 h-[500px] w-[500px] -translate-x-[30%] translate-y-[20%] rounded-full bg-[rgba(173,109,244,0.5)] opacity-50 blur-[80px]"></div>
+    <main className="min-h-screen bg-neutral-900 text-white flex flex-col items-center justify-center p-8 font-sans relative">
+      {/* Background Decorative */}
+      <div className="absolute top-0 -z-10 h-full w-full bg-gradient-to-b from-[#2e1065] via-[#581c87] to-[#6b21a8]">
+        <div className="absolute bottom-auto left-auto right-0 top-20 h-[500px] w-[500px] -translate-x-[50%] rounded-full bg-[rgba(147,51,234,0.2)] opacity-50 blur-[120px]"></div>
+        <div className="absolute bottom-20 left-20 h-[300px] w-[300px] rounded-full bg-[rgba(167,139,250,0.15)] opacity-40 blur-[100px]"></div>
       </div>
 
-      <div className="max-w-2xl w-full bg-white/5 backdrop-blur-xl border border-white/10 p-12 rounded-3xl shadow-2xl flex flex-col items-center">
-        
-        <h1 className="text-5xl font-extrabold mb-8 bg-gradient-to-r from-cyan-400 to-purple-500 bg-clip-text text-transparent">
-          Tauri + React
+      {/* Language Selector - Bottom Right (reusable component) */}
+      <div className="absolute bottom-8 right-8">
+        <LanguageSelector />
+      </div>
+
+      {/* Center Content */}
+      <div className="flex flex-col items-center justify-center flex-1 w-full max-w-2xl">
+        <img src="/icon.png" alt="logo" className="logo-center mb-8" />
+
+        <h1 className="text-6xl font-extrabold mb-4 bg-gradient-to-r from-purple-300 to-purple-100 bg-clip-text text-transparent text-center">
+          {t('welcome.title')}
         </h1>
 
-        {/* Logos con animación */}
-        <div className="flex gap-8 mb-10">
-          <a href="https://vite.dev" target="_blank" className="hover:scale-110 transition-transform duration-300">
-            <img src="/vite.svg" className="h-16 w-16 drop-shadow-[0_0_15px_rgba(100,108,255,0.8)]" alt="Vite logo" />
-          </a>
-          <a href="https://tauri.app" target="_blank" className="hover:scale-110 transition-transform duration-300">
-            <img src="/tauri.svg" className="h-16 w-16 drop-shadow-[0_0_15px_rgba(36,199,235,0.8)]" alt="Tauri logo" />
-          </a>
-          <a href="https://react.dev" target="_blank" className="hover:scale-110 transition-transform duration-300">
-            <img src={reactLogo} className="h-16 w-16 drop-shadow-[0_0_15px_rgba(97,218,251,0.8)] animate-[spin_20s_linear_infinite]" alt="React logo" />
-          </a>
-        </div>
+        <h2 className="text-3xl font-bold mb-12 text-purple-200 text-center">
+          {t('welcome.subtitle')}
+        </h2>
 
-        <p className="text-slate-400 mb-8 text-center text-lg italic">
-          Ready to build something <span className="text-cyan-400 font-semibold">legendary</span>.
-        </p>
-
-        {/* Formulario Estilizado */}
-        <form
-          className="w-full flex flex-col sm:flex-row gap-4 mb-8"
-          onSubmit={(e) => {
-            e.preventDefault();
-            greet();
-          }}
-        >
-          <input
-            id="greet-input"
-            className="flex-1 bg-white/10 border border-white/20 rounded-xl px-6 py-4 outline-none focus:ring-2 focus:ring-purple-500 transition-all text-white placeholder:text-slate-500"
-            onChange={(e) => setName(e.currentTarget.value)}
-            placeholder="Enter your hero name..."
-          />
-          <button 
-            type="submit"
-            className="bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-500 hover:to-cyan-500 px-8 py-4 rounded-xl font-bold uppercase tracking-wider shadow-lg active:scale-95 transition-all"
+        {/* Start Button with Arrow */}
+        <button className="border border-white/30 backdrop-blur-sm px-8 py-4 rounded-full font-medium uppercase tracking-wide flex items-center gap-3 text-lg hover:bg-white/10 transition-all">
+          {t('start')}
+          <svg 
+            className="w-5 h-5" 
+            fill="none" 
+            stroke="currentColor" 
+            viewBox="0 0 24 24"
           >
-            Greet
-          </button>
-        </form>
-
-        {/* Mensaje de Respuesta */}
-        {greetMsg && (
-          <div className="w-full p-4 rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-300 text-center font-medium animate-pulse">
-            {greetMsg}
-          </div>
-        )}
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+          </svg>
+        </button>
       </div>
     </main>
   );
