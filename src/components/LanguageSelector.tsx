@@ -61,7 +61,7 @@ export default function LanguageSelector({ className = '', languages = DEFAULT_L
       </button>
 
       {open && (
-        <div className="absolute right-0 bottom-full mb-2 w-56 z-50">
+        <div className="absolute right-0 top-full mt-2 w-56 z-50">
           <div className="rounded-xl overflow-hidden bg-white/10 backdrop-blur-md border border-white/20 shadow-lg">
             <div className="max-h-64 overflow-y-auto custom-scrollbar">
               {languages.map((l) => {

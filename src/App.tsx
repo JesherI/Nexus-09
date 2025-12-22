@@ -1,50 +1,132 @@
-import { useTranslation } from "react-i18next";
+import { useState, useEffect } from "react";
 import "./App.css";
-import LanguageSelector from "./components/LanguageSelector";
+import StartPage from "./pages/welcome/StartPage";
+import SignUpPage from "./pages/SignUpPage";
+import LoginPage from "./pages/LoginPage";
+import HomePage from "./pages/home/HomePage";
+import { AuthService } from "./services/auth";
+
+type Page = 'loading' | 'start' | 'signup' | 'login' | 'home';
 
 function App() {
-  const { t } = useTranslation();
+  const [currentPage, setCurrentPage] = useState<Page>('loading');
 
-  return (
-    <main className="min-h-screen bg-neutral-900 text-white flex flex-col items-center justify-center p-8 font-sans relative">
-      {/* Background Decorative */}
-      <div className="absolute top-0 -z-10 h-full w-full bg-gradient-to-b from-[#2e1065] via-[#581c87] to-[#6b21a8]">
-        <div className="absolute bottom-auto left-auto right-0 top-20 h-[500px] w-[500px] -translate-x-[50%] rounded-full bg-[rgba(147,51,234,0.2)] opacity-50 blur-[120px]"></div>
-        <div className="absolute bottom-20 left-20 h-[300px] w-[300px] rounded-full bg-[rgba(167,139,250,0.15)] opacity-40 blur-[100px]"></div>
-      </div>
+  useEffect(() => {
+    const initializeApp = async () => {
+      // Primero mostrar loading por 10 segundos
+      await new Promise(resolve => setTimeout(resolve, 10000));
+      
+      // Verificar si hay una sesión activa
+      const storedToken = await AuthService.getStoredToken();
+      if (storedToken) {
+        const user = await AuthService.getCurrentUser(storedToken);
+        if (user) {
+          setCurrentPage('home');
+          return;
+        }
+      }
 
-      {/* Language Selector - Bottom Right (reusable component) */}
-      <div className="absolute bottom-8 right-8">
-        <LanguageSelector />
-      </div>
+      // Verificar si es la primera vez
+      const isFirstTime = await AuthService.isFirstTime();
+      if (isFirstTime) {
+        setCurrentPage('start');
+      } else {
+        setCurrentPage('login');
+      }
+    };
 
-      {/* Center Content */}
-      <div className="flex flex-col items-center justify-center flex-1 w-full max-w-2xl">
-        <img src="/icon.png" alt="logo" className="logo-center mb-8" />
+    initializeApp();
+  }, []);
 
-        <h1 className="text-6xl font-extrabold mb-4 bg-gradient-to-r from-purple-300 to-purple-100 bg-clip-text text-transparent text-center">
-          {t('welcome.title')}
-        </h1>
+  const handleStart = () => {
+    setCurrentPage('signup');
+  };
 
-        <h2 className="text-3xl font-bold mb-12 text-purple-200 text-center">
-          {t('welcome.subtitle')}
-        </h2>
+  const handleSignUp = async (username: string, password: string, profileImage?: string) => {
+    try {
+      await AuthService.register(username, password, profileImage);
+      setCurrentPage('login');
+    } catch (error) {
+      console.error('Registration error:', error);
+      throw error;
+    }
+  };
 
-        {/* Start Button with Arrow */}
-        <button className="border border-white/30 backdrop-blur-sm px-8 py-4 rounded-full font-medium uppercase tracking-wide flex items-center gap-3 text-lg hover:bg-white/10 transition-all">
-          {t('start')}
-          <svg 
-            className="w-5 h-5" 
-            fill="none" 
-            stroke="currentColor" 
-            viewBox="0 0 24 24"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-          </svg>
-        </button>
-      </div>
-    </main>
-  );
+  const handleLogin = async (username: string, password: string) => {
+    try {
+      await AuthService.login(username, password);
+      setCurrentPage('home');
+    } catch (error) {
+      console.error('Login error:', error);
+      throw error;
+    }
+  };
+
+  const handleSwitchToSignUp = () => {
+    setCurrentPage('signup');
+  };
+
+  const handleLogout = async () => {
+    try {
+      const token = await AuthService.getStoredToken();
+      if (token) {
+        await AuthService.logout(token);
+      }
+      setCurrentPage('login');
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+  };
+
+  const renderPage = () => {
+    switch (currentPage) {
+      case 'loading':
+        return (
+          <main className="min-h-screen bg-neutral-900 text-white flex flex-col items-center justify-center p-8 font-sans relative overflow-hidden">
+            {/* Background Decorative */}
+            <div className="absolute top-0 -z-10 h-full w-full bg-gradient-to-b from-[#2e1065] via-[#581c87] to-[#6b21a8]">
+              <div className="absolute bottom-auto left-auto right-0 top-20 h-[500px] w-[500px] -translate-x-[50%] rounded-full bg-[rgba(147,51,234,0.2)] opacity-50 blur-[120px]"></div>
+              <div className="absolute bottom-20 left-20 h-[300px] w-[300px] rounded-full bg-[rgba(167,139,250,0.15)] opacity-40 blur-[100px]"></div>
+            </div>
+
+            {/* Logo flotante animado */}
+            <div className="relative z-10">
+              <img 
+                src="/icon.png" 
+                alt="logo" 
+                className="w-32 h-32 md:w-48 md:h-48 floating-logo"
+              />
+            </div>
+
+            {/* Loading indicator */}
+            <div className="absolute bottom-20 left-1/2 transform -translate-x-1/2">
+              <div className="flex space-x-2">
+                <div className="w-3 h-3 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                <div className="w-3 h-3 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                <div className="w-3 h-3 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+              </div>
+            </div>
+          </main>
+        );
+
+      case 'start':
+        return <StartPage onStart={handleStart} />;
+
+      case 'signup':
+        return <SignUpPage onSignUp={handleSignUp} />;
+
+      case 'login':
+        return <LoginPage onLogin={handleLogin} onSwitchToSignUp={handleSwitchToSignUp} />;
+
+      case 'home':
+        return <HomePage onLogout={handleLogout} />;
+
+      default:
+        return null;
+    }
+  };
+
+  return renderPage();
 }
 
 export default App;
