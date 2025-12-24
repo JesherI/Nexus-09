@@ -75,11 +75,11 @@ const handleUserSelect = (user: User) => {
         <div className="absolute bottom-20 left-20 h-[300px] w-[300px] rounded-full bg-[rgba(167,139,250,0.15)] opacity-40 blur-[100px]"></div>
       </div>
 
-      {/* User Profile Section - Windows Style */}
-      <div className="mb-12">
+{/* User Profile Section - Windows Style */}
+      <div className="mb-12 flex flex-col items-center">
         {/* User Icon - Large and Centered */}
         <div className="relative">
-          <div className="w-32 h-32 md:w-40 md:h-40 rounded-full bg-gradient-to-br from-purple-500/20 to-purple-600/30 border-4 border-purple-400/40 flex items-center justify-center overflow-hidden shadow-2xl mb-4">
+          <div className="w-32 h-32 md:w-40 md:h-40 rounded-full bg-gradient-to-br from-purple-500/20 to-purple-600/30 border-4 border-purple-400/40 flex items-center justify-center overflow-hidden shadow-2xl mb-4 mx-auto">
             {selectedUser?.profileImage ? (
               <img src={selectedUser.profileImage} alt="Profile" className="w-full h-full object-cover" />
             ) : (
@@ -97,22 +97,12 @@ const handleUserSelect = (user: User) => {
           )}
         </div>
 
-        {/* User Selector */}
-        {users.length > 1 && (
-          <div className="mt-6 text-center">
-            <button
-              onClick={() => setShowUserList(!showUserList)}
-              className="px-4 py-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg hover:bg-white/15 transition-all text-sm text-purple-200"
-            >
-              {users.length} users available
-            </button>
-          </div>
-        )}
+
       </div>
 
-      {/* User List Dropdown */}
+{/* User List Dropdown */}
       {showUserList && (
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-80 bg-black/90 backdrop-blur-xl rounded-2xl border border-white/20 shadow-2xl z-50">
+        <div className="fixed bottom-20 left-8 w-80 bg-black/90 backdrop-blur-xl rounded-2xl border border-white/20 shadow-2xl z-50">
           <div className="p-4 border-b border-white/10">
             <p className="text-sm font-medium text-purple-200">Select User</p>
           </div>
@@ -184,17 +174,29 @@ const handleUserSelect = (user: User) => {
               'Sign In'
             )}
           </button>
-        </form>
+</form>
+      </div>
 
-{/* Clear Data Button */}
-        <div className="mt-8 text-center">
+      {/* User Selector - Fixed Bottom Left */}
+      {users.length > 1 && (
+        <div className="fixed bottom-8 left-8 z-50">
           <button
-            onClick={handleClearData}
-            className="text-red-400 hover:text-red-300 text-sm transition-colors underline"
+            onClick={() => setShowUserList(!showUserList)}
+            className="px-4 py-2 bg-black/80 backdrop-blur-sm border border-white/20 rounded-lg hover:bg-black/90 transition-all text-sm text-purple-200 shadow-lg"
           >
-            🗑️ Clear All Data (Testing)
+            {users.length} users available
           </button>
         </div>
+      )}
+
+      {/* Clear Data Button - Below Sign In Form */}
+      <div className="mt-8 text-center">
+        <button
+          onClick={handleClearData}
+          className="text-red-400 hover:text-red-300 text-sm transition-colors underline"
+        >
+          🗑️ Clear All Data (Testing)
+        </button>
       </div>
     </main>
   );
