@@ -16,9 +16,9 @@ function StartPage({ onStart }: StartPageProps) {
         <div className="absolute bottom-20 left-20 h-[300px] w-[300px] rounded-full bg-[rgba(167,139,250,0.15)] opacity-40 blur-[100px]"></div>
       </div>
 
-      {/* Language Selector - Bottom Right (reusable component) */}
+{/* Language Selector - Bottom Right (reusable component) */}
       <div className="absolute bottom-8 right-8">
-        <LanguageSelector />
+        <LanguageSelector dropdownPosition="up" />
       </div>
 
       {/* Center Content */}

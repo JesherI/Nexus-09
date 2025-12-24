@@ -5,6 +5,7 @@ import SignUpPage from "./pages/SignUpPage";
 import LoginPage from "./pages/LoginPage";
 import HomePage from "./pages/home/HomePage";
 import { AuthService } from "./services/auth";
+import { UserType } from "./database";
 
 type Page = 'loading' | 'start' | 'signup' | 'login' | 'home';
 
@@ -42,9 +43,18 @@ function App() {
     setCurrentPage('signup');
   };
 
-  const handleSignUp = async (username: string, password: string, profileImage?: string) => {
+const handleSignUp = async (userData: {
+    nombre: string;
+    apellidoPaterno: string;
+    apellidoMaterno: string;
+    phone: string;
+    email: string;
+    password: string;
+    profileImage?: string;
+    type?: UserType;
+  }) => {
     try {
-      await AuthService.register(username, password, profileImage);
+      await AuthService.register(userData);
       setCurrentPage('login');
     } catch (error) {
       console.error('Registration error:', error);
@@ -52,9 +62,9 @@ function App() {
     }
   };
 
-  const handleLogin = async (username: string, password: string) => {
+const handleLogin = async (email: string, password: string) => {
     try {
-      await AuthService.login(username, password);
+      await AuthService.login(email, password);
       setCurrentPage('home');
     } catch (error) {
       console.error('Login error:', error);
@@ -62,11 +72,9 @@ function App() {
     }
   };
 
-  const handleSwitchToSignUp = () => {
-    setCurrentPage('signup');
-  };
 
-  const handleLogout = async () => {
+
+const handleLogout = async () => {
     try {
       const token = await AuthService.getStoredToken();
       if (token) {
@@ -77,6 +85,8 @@ function App() {
       console.error('Logout error:', error);
     }
   };
+
+  
 
   const renderPage = () => {
     switch (currentPage) {
@@ -115,8 +125,8 @@ function App() {
       case 'signup':
         return <SignUpPage onSignUp={handleSignUp} />;
 
-      case 'login':
-        return <LoginPage onLogin={handleLogin} onSwitchToSignUp={handleSwitchToSignUp} />;
+case 'login':
+        return <LoginPage onLogin={handleLogin} />;
 
       case 'home':
         return <HomePage onLogout={handleLogout} />;

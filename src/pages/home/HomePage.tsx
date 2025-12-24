@@ -35,7 +35,7 @@ function HomePage({ onLogout }: HomePageProps) {
     await onLogout();
   };
 
-  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file && user) {
       const reader = new FileReader();
@@ -51,6 +51,8 @@ function HomePage({ onLogout }: HomePageProps) {
       reader.readAsDataURL(file);
     }
   };
+
+  
 
   if (loading) {
     return (
@@ -82,7 +84,7 @@ function HomePage({ onLogout }: HomePageProps) {
 
             {/* Profile Section */}
             <div className="flex items-center gap-4">
-              <LanguageSelector />
+              <LanguageSelector dropdownPosition="down" />
               
               <div className="relative z-50">
                 <button
@@ -98,7 +100,7 @@ function HomePage({ onLogout }: HomePageProps) {
                       </svg>
                     )}
                   </div>
-                  <span className="text-sm font-medium">{user?.username}</span>
+                  <span className="text-sm font-medium">{user?.nombre} {user?.apellidoPaterno}</span>
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                   </svg>
@@ -119,7 +121,7 @@ function HomePage({ onLogout }: HomePageProps) {
                           )}
                         </div>
                         <div>
-                          <p className="font-medium">{user?.username}</p>
+                          <p className="font-medium">{user?.nombre} {user?.apellidoPaterno}</p>
                           <p className="text-xs text-gray-400">Member since {user?.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'Unknown'}</p>
                         </div>
                       </div>
@@ -159,7 +161,7 @@ function HomePage({ onLogout }: HomePageProps) {
       <main className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="text-center">
           <h2 className="text-4xl font-bold mb-4 bg-gradient-to-r from-purple-300 to-purple-100 bg-clip-text text-transparent">
-            Welcome back, {user?.username}!
+            Welcome back, {user?.nombre} {user?.apellidoPaterno}!
           </h2>
           <p className="text-xl text-purple-200 mb-8">
             Your Nexus workspace is ready
@@ -187,7 +189,7 @@ function HomePage({ onLogout }: HomePageProps) {
               <p className="text-sm text-gray-400">No recent activity</p>
             </div>
 
-            {/* Quick Actions */}
+{/* Quick Actions */}
             <div className="bg-black/20 backdrop-blur-lg rounded-xl border border-white/10 p-6">
               <h3 className="text-lg font-semibold mb-4 text-purple-300">Quick Actions</h3>
               <div className="space-y-2">

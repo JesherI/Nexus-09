@@ -1,34 +1,94 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { UserType } from '../database';
+import { AuthService } from '../services/auth';
 
 interface SignUpPageProps {
-  onSignUp: (username: string, password: string, profileImage?: string) => Promise<void>;
+  onSignUp: (userData: {
+    nombre: string;
+    apellidoPaterno: string;
+    apellidoMaterno: string;
+    phone: string;
+    email: string;
+    password: string;
+    profileImage?: string;
+    type?: UserType;
+  }) => Promise<void>;
 }
 
 function SignUpPage({ onSignUp }: SignUpPageProps) {
   const [formData, setFormData] = useState({
-    username: '',
+    nombre: '',
+    apellidoPaterno: '',
+    apellidoMaterno: '',
+    phone: '',
+    email: '',
     password: '',
-    confirmPassword: ''
+    confirmPassword: '',
+    type: 'admin' as UserType
   });
   const [profileImage, setProfileImage] = useState<string>('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [isFirstTime, setIsFirstTime] = useState(true);
+  const [showTypeSelector, setShowTypeSelector] = useState(false);
+
+  useEffect(() => {
+    const checkFirstTime = async () => {
+      const firstTime = await AuthService.isFirstTime();
+      setIsFirstTime(firstTime);
+      setShowTypeSelector(!firstTime); // Show selector only if not first time
+      
+      // Set default type based on first time status
+      setFormData(prev => ({
+        ...prev,
+        type: firstTime ? 'owner' : 'admin'
+      }));
+    };
+    
+    checkFirstTime();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setLoading(true);
 
-    try {
+try {
+      // Validar que todos los campos estén llenos
+      if (!formData.nombre || !formData.apellidoPaterno || !formData.apellidoMaterno || 
+          !formData.phone || !formData.email || !formData.password) {
+        throw new Error('Todos los campos son obligatorios');
+      }
+
+      // Validar email
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(formData.email)) {
+        throw new Error('Ingrese un email válido');
+      }
+
+      // Validar teléfono (mínimo 10 dígitos)
+      if (formData.phone.length < 10) {
+        throw new Error('El teléfono debe tener al menos 10 dígitos');
+      }
+
       if (formData.password !== formData.confirmPassword) {
-        throw new Error('Passwords do not match');
+        throw new Error('Las contraseñas no coinciden');
       }
 
       if (formData.password.length < 6) {
-        throw new Error('Password must be at least 6 characters');
+        throw new Error('La contraseña debe tener al menos 6 caracteres');
       }
 
-      await onSignUp(formData.username, formData.password, profileImage);
+      await onSignUp({
+        nombre: formData.nombre,
+        apellidoPaterno: formData.apellidoPaterno,
+        apellidoMaterno: formData.apellidoMaterno,
+        phone: formData.phone,
+        email: formData.email,
+        password: formData.password,
+        profileImage,
+        type: showTypeSelector ? formData.type : undefined
+      });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Registration failed');
     } finally {
@@ -88,18 +148,98 @@ function SignUpPage({ onSignUp }: SignUpPageProps) {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Username */}
+{/* Nombre */}
           <div>
-            <label className="block text-sm font-medium mb-2 text-purple-200">Username</label>
+            <label className="block text-sm font-medium mb-2 text-purple-200">Nombre</label>
             <input
               type="text"
-              value={formData.username}
-              onChange={(e) => setFormData({...formData, username: e.target.value})}
+              value={formData.nombre}
+              onChange={(e) => setFormData({...formData, nombre: e.target.value})}
               className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg focus:outline-none focus:border-purple-400 focus:bg-white/15 transition-all text-white placeholder-gray-400"
-              placeholder="Enter username"
+              placeholder="Ingrese su nombre"
               required
             />
           </div>
+
+          {/* Apellido Paterno */}
+          <div>
+            <label className="block text-sm font-medium mb-2 text-purple-200">Apellido Paterno</label>
+            <input
+              type="text"
+              value={formData.apellidoPaterno}
+              onChange={(e) => setFormData({...formData, apellidoPaterno: e.target.value})}
+              className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg focus:outline-none focus:border-purple-400 focus:bg-white/15 transition-all text-white placeholder-gray-400"
+              placeholder="Ingrese su apellido paterno"
+              required
+            />
+          </div>
+
+          {/* Apellido Materno */}
+          <div>
+            <label className="block text-sm font-medium mb-2 text-purple-200">Apellido Materno</label>
+            <input
+              type="text"
+              value={formData.apellidoMaterno}
+              onChange={(e) => setFormData({...formData, apellidoMaterno: e.target.value})}
+              className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg focus:outline-none focus:border-purple-400 focus:bg-white/15 transition-all text-white placeholder-gray-400"
+              placeholder="Ingrese su apellido materno"
+              required
+            />
+          </div>
+
+          {/* Phone */}
+          <div>
+            <label className="block text-sm font-medium mb-2 text-purple-200">Teléfono</label>
+            <input
+              type="tel"
+              value={formData.phone}
+              onChange={(e) => setFormData({...formData, phone: e.target.value})}
+              className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg focus:outline-none focus:border-purple-400 focus:bg-white/15 transition-all text-white placeholder-gray-400"
+              placeholder="Ingrese su teléfono"
+              required
+            />
+          </div>
+
+          {/* Email */}
+          <div>
+            <label className="block text-sm font-medium mb-2 text-purple-200">Email</label>
+            <input
+              type="email"
+              value={formData.email}
+              onChange={(e) => setFormData({...formData, email: e.target.value})}
+              className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg focus:outline-none focus:border-purple-400 focus:bg-white/15 transition-all text-white placeholder-gray-400"
+              placeholder="Ingrese su email"
+              required
+            />
+          </div>
+
+          {/* User Type - Only show if not first time */}
+          {showTypeSelector && (
+            <div>
+              <label className="block text-sm font-medium mb-2 text-purple-200">User Type</label>
+              <select
+                value={formData.type}
+                onChange={(e) => setFormData({...formData, type: e.target.value as UserType})}
+                className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg focus:outline-none focus:border-purple-400 focus:bg-white/15 transition-all text-white"
+                required
+              >
+                <option value="admin" className="bg-neutral-800">Admin</option>
+                <option value="cashier" className="bg-neutral-800">Cashier</option>
+              </select>
+            </div>
+          )}
+
+          {/* First Time Info */}
+          {isFirstTime && (
+            <div className="p-3 bg-purple-500/20 border border-purple-500/30 rounded-lg text-purple-200 text-sm">
+              <div className="flex items-center gap-2">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span>First user will be automatically set as Owner</span>
+              </div>
+            </div>
+          )}
 
           {/* Password */}
           <div>

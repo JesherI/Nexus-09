@@ -1,13 +1,12 @@
 import { useState, useEffect } from 'react';
 import { AuthService } from '../services/auth';
-import { User } from '../database';
+import { User, db } from '../database';
 
 interface LoginPageProps {
-  onLogin: (username: string, password: string) => Promise<void>;
-  onSwitchToSignUp: () => void;
+  onLogin: (email: string, password: string) => Promise<void>;
 }
 
-function LoginPage({ onLogin, onSwitchToSignUp }: LoginPageProps) {
+function LoginPage({ onLogin }: LoginPageProps) {
   const [users, setUsers] = useState<User[]>([]);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [password, setPassword] = useState('');
@@ -42,7 +41,7 @@ function LoginPage({ onLogin, onSwitchToSignUp }: LoginPageProps) {
     setLoading(true);
 
     try {
-      await onLogin(selectedUser.username, password);
+      await onLogin(selectedUser.email, password);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Login failed');
     } finally {
@@ -50,11 +49,22 @@ function LoginPage({ onLogin, onSwitchToSignUp }: LoginPageProps) {
     }
   };
 
-  const handleUserSelect = (user: User) => {
+const handleUserSelect = (user: User) => {
     setSelectedUser(user);
     setShowUserList(false);
     setPassword('');
     setError('');
+  };
+
+  const handleClearData = async () => {
+    try {
+      if (window.confirm('Are you sure you want to clear all data? This will delete all users and sessions.')) {
+        await db.delete();
+        window.location.reload();
+      }
+    } catch (error) {
+      console.error('Clear data error:', error);
+    }
   };
 
   return (
@@ -81,8 +91,8 @@ function LoginPage({ onLogin, onSwitchToSignUp }: LoginPageProps) {
           
           {/* User Name */}
           {selectedUser && (
-            <h2 className="text-3xl md:text-4xl font-bold text-center text-white">
-              {selectedUser.username}
+<h2 className="text-3xl md:text-4xl font-bold text-center text-white">
+              {selectedUser.nombre} {selectedUser.apellidoPaterno}
             </h2>
           )}
         </div>
@@ -125,7 +135,7 @@ function LoginPage({ onLogin, onSwitchToSignUp }: LoginPageProps) {
                   )}
                 </div>
                 <div className="flex-1 text-left">
-                  <p className="font-medium">{user.username}</p>
+                  <p className="font-medium">{user.nombre} {user.apellidoPaterno}</p>
                   <p className="text-xs text-gray-400">Member since {new Date(user.createdAt).toLocaleDateString()}</p>
                 </div>
               </button>
@@ -176,13 +186,13 @@ function LoginPage({ onLogin, onSwitchToSignUp }: LoginPageProps) {
           </button>
         </form>
 
-        {/* Switch to Sign Up */}
+{/* Clear Data Button */}
         <div className="mt-8 text-center">
           <button
-            onClick={onSwitchToSignUp}
-            className="text-purple-300 hover:text-purple-200 text-sm transition-colors"
+            onClick={handleClearData}
+            className="text-red-400 hover:text-red-300 text-sm transition-colors underline"
           >
-            Don't have an account? Sign up
+            🗑️ Clear All Data (Testing)
           </button>
         </div>
       </div>

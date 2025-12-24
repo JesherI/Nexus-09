@@ -1,10 +1,17 @@
 import Dexie, { Table } from 'dexie';
 
+export type UserType = 'owner' | 'admin' | 'cashier';
+
 export interface User {
   id?: number;
-  username: string;
+  nombre: string;
+  apellidoPaterno: string;
+  apellidoMaterno: string;
+  phone: string;
+  email: string;
   password: string; // hashed password
   profileImage?: string; // base64 image data
+  type: UserType;
   createdAt: Date;
   lastLogin?: Date;
 }
@@ -24,8 +31,8 @@ class AppDatabase extends Dexie {
   constructor() {
     super('NexusAppDB');
     
-    this.version(1).stores({
-      users: '++id, username, createdAt, lastLogin',
+this.version(1).stores({
+      users: '++id, email, phone, type, createdAt, lastLogin',
       sessions: '++id, userId, token, createdAt, expiresAt'
     });
   }
