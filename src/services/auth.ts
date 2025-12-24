@@ -121,15 +121,16 @@ static async login(email: string, password: string): Promise<{ user: User; token
     await db.users.update(userId, { profileImage });
   }
 
-  static async getStoredToken(): Promise<string | null> {
-    const session = await db.sessions.orderBy('createdAt').last();
-    if (!session || session.expiresAt < new Date()) {
-      return null;
-    }
-    return session.token;
+static async getStoredToken(): Promise<string | null> {
+    // Always return null to force login every time
+    return null;
   }
 
-  static async getAllUsers(): Promise<User[]> {
+static async getAllUsers(): Promise<User[]> {
     return await db.users.orderBy('createdAt').toArray();
+  }
+
+  static async clearAllSessions(): Promise<void> {
+    await db.sessions.clear();
   }
 }

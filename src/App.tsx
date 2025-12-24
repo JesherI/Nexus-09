@@ -13,21 +13,13 @@ function App() {
   const [currentPage, setCurrentPage] = useState<Page>('loading');
   const [currentUser, setCurrentUser] = useState<User | null>(null);
 
-  useEffect(() => {
+useEffect(() => {
     const initializeApp = async () => {
+      // Limpiar todas las sesiones existentes para forzar login
+      await AuthService.clearAllSessions();
+      
       // Primero mostrar loading por 10 segundos
       await new Promise(resolve => setTimeout(resolve, 10000));
-      
-      // Verificar si hay una sesión activa
-      const storedToken = await AuthService.getStoredToken();
-      if (storedToken) {
-        const user = await AuthService.getCurrentUser(storedToken);
-        if (user) {
-          setCurrentUser(user);
-          setCurrentPage('home');
-          return;
-        }
-      }
 
       // Verificar si es la primera vez
       const isFirstTime = await AuthService.isFirstTime();

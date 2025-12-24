@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { UserType } from '../database';
 import { AuthService } from '../services/auth';
+import { db } from '../database';
 
 interface SignUpPageProps {
   onSignUp: (userData: {
@@ -106,7 +107,7 @@ try {
     }
   };
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
@@ -114,6 +115,17 @@ try {
         setProfileImage(reader.result as string);
       };
       reader.readAsDataURL(file);
+    }
+  };
+
+  const handleClearData = async () => {
+    try {
+      if (window.confirm('Are you sure you want to clear all data? This will delete all users and sessions.')) {
+        await db.delete();
+        window.location.reload();
+      }
+    } catch (error) {
+      console.error('Clear data error:', error);
     }
   };
 
@@ -311,7 +323,17 @@ try {
               'Sign Up'
             )}
           </button>
-        </form>
+</form>
+      </div>
+
+      {/* Clear Data Button - Fixed Bottom Left */}
+      <div className="fixed bottom-8 left-8 z-50">
+        <button
+          onClick={handleClearData}
+          className="px-4 py-2 bg-black/80 backdrop-blur-sm border border-white/20 rounded-lg hover:bg-black/90 transition-all text-sm text-red-400 shadow-lg"
+        >
+          🗑️ Clear All Data (Testing)
+        </button>
       </div>
     </main>
   );
