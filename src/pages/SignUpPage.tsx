@@ -12,10 +12,12 @@ interface SignUpPageProps {
     password: string;
     profileImage?: string;
     type?: UserType;
+    currentUserRole?: UserType;
   }) => Promise<void>;
+  currentUserRole?: UserType;
 }
 
-function SignUpPage({ onSignUp }: SignUpPageProps) {
+function SignUpPage({ onSignUp, currentUserRole }: SignUpPageProps) {
   const [formData, setFormData] = useState({
     nombre: '',
     apellidoPaterno: '',
@@ -24,7 +26,7 @@ function SignUpPage({ onSignUp }: SignUpPageProps) {
     email: '',
     password: '',
     confirmPassword: '',
-    type: 'admin' as UserType
+    type: currentUserRole === 'admin' ? 'cashier' as UserType : 'admin' as UserType
   });
   const [profileImage, setProfileImage] = useState<string>('');
   const [loading, setLoading] = useState(false);
@@ -38,11 +40,18 @@ function SignUpPage({ onSignUp }: SignUpPageProps) {
       setIsFirstTime(firstTime);
       setShowTypeSelector(!firstTime); // Show selector only if not first time
       
-      // Set default type based on first time status
-      setFormData(prev => ({
-        ...prev,
-        type: firstTime ? 'owner' : 'admin'
-      }));
+      // Set default type based on first time status and current user role
+      if (!firstTime && currentUserRole) {
+        setFormData(prev => ({
+          ...prev,
+          type: currentUserRole === 'owner' ? 'admin' : 'cashier'
+        }));
+      } else {
+        setFormData(prev => ({
+          ...prev,
+          type: 'owner'
+        }));
+      }
     };
     
     checkFirstTime();
@@ -87,7 +96,8 @@ try {
         email: formData.email,
         password: formData.password,
         profileImage,
-        type: showTypeSelector ? formData.type : undefined
+        type: showTypeSelector ? formData.type : undefined,
+        currentUserRole
       });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Registration failed');
@@ -213,19 +223,31 @@ try {
             />
           </div>
 
-          {/* User Type - Only show if not first time */}
-          {showTypeSelector && (
+          {/* User Type - Only show if not first time and currentUserRole is provided */}
+          {showTypeSelector && currentUserRole && (
             <div>
-              <label className="block text-sm font-medium mb-2 text-purple-200">User Type</label>
+              <label className="block text-sm font-medium mb-2 text-purple-200">
+                User Type {currentUserRole === 'owner' ? '(Admin)' : '(Cashier)'}
+              </label>
               <select
                 value={formData.type}
                 onChange={(e) => setFormData({...formData, type: e.target.value as UserType})}
                 className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg focus:outline-none focus:border-purple-400 focus:bg-white/15 transition-all text-white"
                 required
+                disabled
               >
-                <option value="admin" className="bg-neutral-800">Admin</option>
-                <option value="cashier" className="bg-neutral-800">Cashier</option>
+                {currentUserRole === 'owner' ? (
+                  <option value="admin" className="bg-neutral-800">Admin</option>
+                ) : (
+                  <option value="cashier" className="bg-neutral-800">Cashier</option>
+                )}
               </select>
+              <p className="text-xs text-gray-400 mt-1">
+                {currentUserRole === 'owner' 
+                  ? 'As Owner, you can only register Admin users'
+                  : 'As Admin, you can only register Cashier users'
+                }
+              </p>
             </div>
           )}
 

@@ -5,12 +5,13 @@ import SignUpPage from "./pages/SignUpPage";
 import LoginPage from "./pages/LoginPage";
 import HomePage from "./pages/home/HomePage";
 import { AuthService } from "./services/auth";
-import { UserType } from "./database";
+import { UserType, User } from "./database";
 
 type Page = 'loading' | 'start' | 'signup' | 'login' | 'home';
 
 function App() {
   const [currentPage, setCurrentPage] = useState<Page>('loading');
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
 
   useEffect(() => {
     const initializeApp = async () => {
@@ -22,6 +23,7 @@ function App() {
       if (storedToken) {
         const user = await AuthService.getCurrentUser(storedToken);
         if (user) {
+          setCurrentUser(user);
           setCurrentPage('home');
           return;
         }
@@ -52,6 +54,7 @@ const handleSignUp = async (userData: {
     password: string;
     profileImage?: string;
     type?: UserType;
+    currentUserRole?: UserType;
   }) => {
     try {
       await AuthService.register(userData);
@@ -74,7 +77,7 @@ const handleLogin = async (email: string, password: string) => {
 
 
 
-const handleLogout = async () => {
+  const handleLogout = async () => {
     try {
       const token = await AuthService.getStoredToken();
       if (token) {
@@ -85,6 +88,12 @@ const handleLogout = async () => {
       console.error('Logout error:', error);
     }
   };
+
+  const handleGoToLogin = () => {
+    setCurrentPage('login');
+  };
+
+
 
   
 
@@ -123,13 +132,13 @@ const handleLogout = async () => {
         return <StartPage onStart={handleStart} />;
 
       case 'signup':
-        return <SignUpPage onSignUp={handleSignUp} />;
+        return <SignUpPage onSignUp={handleSignUp} currentUserRole={currentUser?.type} />;
 
 case 'login':
         return <LoginPage onLogin={handleLogin} />;
 
       case 'home':
-        return <HomePage onLogout={handleLogout} />;
+        return <HomePage onLogout={handleLogout} onGoToLogin={handleGoToLogin} />;
 
       default:
         return null;

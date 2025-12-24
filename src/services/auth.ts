@@ -7,7 +7,7 @@ export class AuthService {
     return userCount === 0;
   }
 
-static async register(userData: {
+  static async register(userData: {
     nombre: string;
     apellidoPaterno: string;
     apellidoMaterno: string;
@@ -16,6 +16,7 @@ static async register(userData: {
     password: string;
     profileImage?: string;
     type?: UserType; // Make optional - will be determined automatically
+    currentUserRole?: UserType; // Role of the current user making the registration
   }): Promise<User> {
     // Check if email already exists
     const existingUser = await db.users.where('email').equals(userData.email).first();
@@ -29,7 +30,7 @@ static async register(userData: {
       throw new Error('Phone already exists');
     }
 
-    // Determine user type automatically
+    // Determine user type based on first time or current user's role
     const isFirstTime = await this.isFirstTime();
     let userType: UserType;
     
@@ -37,11 +38,26 @@ static async register(userData: {
       // First user is always owner
       userType = 'owner';
     } else {
-      // Subsequent users cannot be owner
-      if (userData.type === 'owner') {
-        throw new Error('Only the first user can be owner');
+      // Validate role-based registration
+      if (!userData.currentUserRole) {
+        throw new Error('Current user role is required for registration');
       }
-      userType = userData.type || 'admin'; // Default to admin if not specified
+
+      if (userData.currentUserRole === 'owner') {
+        // Owner can register admins
+        if (userData.type && userData.type !== 'admin') {
+          throw new Error('Owner can only register admin users');
+        }
+        userType = 'admin';
+      } else if (userData.currentUserRole === 'admin') {
+        // Admin can register cashiers
+        if (userData.type && userData.type !== 'cashier') {
+          throw new Error('Admin can only register cashier users');
+        }
+        userType = 'cashier';
+      } else {
+        throw new Error('Cashier cannot register new users');
+      }
     }
 
     const hashedPassword = hashPassword(userData.password);
