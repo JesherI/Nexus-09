@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { AuthService } from '../services/auth';
 import { User, db } from '../database';
+import ThemeToggle from '../components/ThemeToggle';
 
 interface LoginPageProps {
   onLogin: (email: string, password: string) => Promise<void>;
@@ -68,30 +69,30 @@ const handleUserSelect = (user: User) => {
   };
 
   return (
-    <main className="min-h-screen bg-neutral-900 text-white flex flex-col items-center justify-center p-8 font-sans relative">
+    <main className="min-h-screen bg-primary text-primary flex flex-col items-center justify-center p-8 font-sans relative gradient-bg">
       {/* Background Decorative */}
-      <div className="absolute top-0 -z-10 h-full w-full bg-gradient-to-b from-[#2e1065] via-[#581c87] to-[#6b21a8]">
-        <div className="absolute bottom-auto left-auto right-0 top-20 h-[500px] w-[500px] -translate-x-[50%] rounded-full bg-[rgba(147,51,234,0.2)] opacity-50 blur-[120px]"></div>
-        <div className="absolute bottom-20 left-20 h-[300px] w-[300px] rounded-full bg-[rgba(167,139,250,0.15)] opacity-40 blur-[100px]"></div>
+      <div className="absolute top-0 -z-10 h-full w-full">
+        <div className="absolute bottom-auto left-auto right-0 top-20 h-[500px] w-[500px] -translate-x-[50%] rounded-full decoration-secondary opacity-50 decoration-blur-primary"></div>
+        <div className="absolute bottom-20 left-20 h-[300px] w-[300px] rounded-full decoration-tertiary opacity-40 decoration-blur-secondary"></div>
       </div>
 
 {/* User Profile Section - Windows Style */}
       <div className="mb-12 flex flex-col items-center">
         {/* User Icon - Large and Centered */}
         <div className="relative">
-          <div className="w-32 h-32 md:w-40 md:h-40 rounded-full bg-gradient-to-br from-purple-500/20 to-purple-600/30 border-4 border-purple-400/40 flex items-center justify-center overflow-hidden shadow-2xl mb-4 mx-auto">
-            {selectedUser?.profileImage ? (
-              <img src={selectedUser.profileImage} alt="Profile" className="w-full h-full object-cover" />
-            ) : (
-              <svg className="w-20 h-20 md:w-24 md:h-24 text-purple-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-              </svg>
-            )}
+         <div className="w-32 h-32 md:w-40 md:h-40 rounded-full login-profile-container flex items-center justify-center overflow-hidden shadow-2xl mb-4 mx-auto hover:scale-[1.02] transition-all duration-300">
+           {selectedUser?.profileImage ? (
+             <img src={selectedUser.profileImage} alt="Profile" className="w-full h-full object-cover" />
+           ) : (
+             <svg className="w-20 h-20 md:w-24 md:h-24 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+             </svg>
+           )}
           </div>
           
           {/* User Name */}
           {selectedUser && (
-<h2 className="text-3xl md:text-4xl font-bold text-center text-white">
+ <h2 className="text-3xl md:text-4xl font-bold text-center text-enhanced">
               {selectedUser.nombre} {selectedUser.apellidoPaterno}
             </h2>
           )}
@@ -144,11 +145,10 @@ const handleUserSelect = (user: User) => {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-6 py-4 bg-gray-900/80 border border-gray-700/50 rounded-lg focus:outline-none focus:border-gray-600 focus:bg-gray-900/90 focus:ring-2 focus:ring-gray-700 transition-all text-white placeholder-gray-500 text-base"
+                className="w-full px-6 py-4 rounded-lg text-base login-input transition-all"
                 placeholder="Password"
                 required
               />
-              <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-transparent via-gray-800/20 to-transparent pointer-events-none"></div>
             </div>
           </div>
 
@@ -163,7 +163,7 @@ const handleUserSelect = (user: User) => {
           <button
             type="submit"
             disabled={loading || !selectedUser}
-            className="w-full bg-gray-800/90 hover:bg-gray-800 disabled:bg-gray-900/50 disabled:cursor-not-allowed text-white font-medium py-4 rounded-lg transition-all duration-300 text-base border border-gray-700/50 hover:border-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-700 focus:ring-offset-2 focus:ring-offset-gray-900"
+            className="w-full accent-bg hover:accent-hover disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium py-4 rounded-lg transition-all duration-300 text-base hover:scale-[1.02] shadow-lg"
           >
             {loading ? (
               <div className="flex items-center justify-center gap-3">
@@ -179,7 +179,8 @@ const handleUserSelect = (user: User) => {
 
       {/* User Selector - Fixed Bottom Left */}
       {users.length > 1 && (
-        <div className="fixed bottom-8 left-8 z-50">
+        <div className="fixed bottom-8 left-8 z-50 flex items-center gap-4">
+          <ThemeToggle variant="switch" />
           <button
             onClick={() => setShowUserList(!showUserList)}
             className="px-4 py-2 bg-black/80 backdrop-blur-sm border border-white/20 rounded-lg hover:bg-black/90 transition-all text-sm text-purple-200 shadow-lg"
@@ -190,7 +191,8 @@ const handleUserSelect = (user: User) => {
       )}
 
       {/* Clear Data Button - Below Sign In Form */}
-      <div className="mt-8 text-center">
+      <div className="mt-8 text-center flex items-center justify-center gap-4">
+        {users.length <= 1 && <ThemeToggle variant="switch" />}
         <button
           onClick={handleClearData}
           className="text-red-400 hover:text-red-300 text-sm transition-colors underline"

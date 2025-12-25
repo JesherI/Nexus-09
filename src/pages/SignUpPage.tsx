@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { UserType } from '../database';
 import { AuthService } from '../services/auth';
 import { db } from '../database';
+import ThemeToggle from '../components/ThemeToggle';
 
 interface SignUpPageProps {
   onSignUp: (userData: {
@@ -130,31 +131,31 @@ const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
   };
 
   return (
-    <main className="min-h-screen bg-neutral-900 text-white flex flex-col items-center justify-center p-8 font-sans relative">
+    <main className="min-h-screen bg-primary text-primary flex flex-col items-center justify-center p-8 font-sans relative gradient-bg">
       {/* Background Decorative */}
-      <div className="absolute top-0 -z-10 h-full w-full bg-gradient-to-b from-[#2e1065] via-[#581c87] to-[#6b21a8]">
-        <div className="absolute bottom-auto left-auto right-0 top-20 h-[500px] w-[500px] -translate-x-[50%] rounded-full bg-[rgba(147,51,234,0.2)] opacity-50 blur-[120px]"></div>
-        <div className="absolute bottom-20 left-20 h-[300px] w-[300px] rounded-full bg-[rgba(167,139,250,0.15)] opacity-40 blur-[100px]"></div>
+      <div className="absolute top-0 -z-10 h-full w-full">
+        <div className="absolute bottom-auto left-auto right-0 top-20 h-[500px] w-[500px] -translate-x-[50%] rounded-full decoration-secondary opacity-50 decoration-blur-primary"></div>
+        <div className="absolute bottom-20 left-20 h-[300px] w-[300px] rounded-full decoration-tertiary opacity-40 decoration-blur-secondary"></div>
       </div>
 
       {/* Form Container */}
-      <div className="w-full max-w-md bg-black/20 backdrop-blur-lg rounded-2xl border border-white/10 p-8">
-        <h2 className="text-3xl font-bold text-center mb-8 bg-gradient-to-r from-purple-300 to-purple-100 bg-clip-text text-transparent">
+      <div className="w-full max-w-md glass-card rounded-2xl p-8">
+        <h2 className="text-3xl font-bold text-center mb-8 text-enhanced">
           Create Account
         </h2>
 
         {/* Profile Image Upload */}
         <div className="flex justify-center mb-6">
           <div className="relative">
-            <div className="w-24 h-24 rounded-full bg-purple-600/20 border-2 border-purple-400/30 flex items-center justify-center overflow-hidden">
-              {profileImage ? (
-                <img src={profileImage} alt="Profile" className="w-full h-full object-cover" />
-              ) : (
-                <svg className="w-12 h-12 text-purple-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                </svg>
-              )}
-            </div>
+             <div className="w-24 h-24 rounded-full accent-bg/20 border-2 accent/30 flex items-center justify-center overflow-hidden">
+               {profileImage ? (
+                 <img src={profileImage} alt="Profile" className="w-full h-full object-cover" />
+               ) : (
+                 <svg className="w-12 h-12 accent-text" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                 </svg>
+               )}
+             </div>
             <label className="absolute bottom-0 right-0 w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center cursor-pointer hover:bg-purple-600 transition-colors">
               <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -172,7 +173,7 @@ const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         <form onSubmit={handleSubmit} className="space-y-4">
 {/* Nombre */}
           <div>
-            <label className="block text-sm font-medium mb-2 text-purple-200">Nombre</label>
+            <label className="block text-sm font-medium mb-2 accent-text">Nombre</label>
             <input
               type="text"
               value={formData.nombre}
@@ -185,7 +186,7 @@ const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 
           {/* Apellido Paterno */}
           <div>
-            <label className="block text-sm font-medium mb-2 text-purple-200">Apellido Paterno</label>
+            <label className="block text-sm font-medium mb-2 accent-text">Apellido Paterno</label>
             <input
               type="text"
               value={formData.apellidoPaterno}
@@ -198,7 +199,7 @@ const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 
           {/* Apellido Materno */}
           <div>
-            <label className="block text-sm font-medium mb-2 text-purple-200">Apellido Materno</label>
+            <label className="block text-sm font-medium mb-2 accent-text">Apellido Materno</label>
             <input
               type="text"
               value={formData.apellidoMaterno}
@@ -211,7 +212,7 @@ const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 
           {/* Phone */}
           <div>
-            <label className="block text-sm font-medium mb-2 text-purple-200">Teléfono</label>
+            <label className="block text-sm font-medium mb-2 accent-text">Teléfono</label>
             <input
               type="tel"
               value={formData.phone}
@@ -224,7 +225,7 @@ const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 
           {/* Email */}
           <div>
-            <label className="block text-sm font-medium mb-2 text-purple-200">Email</label>
+            <label className="block text-sm font-medium mb-2 accent-text">Email</label>
             <input
               type="email"
               value={formData.email}
@@ -238,9 +239,9 @@ const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
           {/* User Type - Only show if not first time and currentUserRole is provided */}
           {showTypeSelector && currentUserRole && (
             <div>
-              <label className="block text-sm font-medium mb-2 text-purple-200">
-                User Type {currentUserRole === 'owner' ? '(Admin)' : '(Cashier)'}
-              </label>
+               <label className="block text-sm font-medium mb-2 accent-text">
+                 User Type {currentUserRole === 'owner' ? '(Admin)' : '(Cashier)'}
+               </label>
               <select
                 value={formData.type}
                 onChange={(e) => setFormData({...formData, type: e.target.value as UserType})}
@@ -277,7 +278,7 @@ const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 
           {/* Password */}
           <div>
-            <label className="block text-sm font-medium mb-2 text-purple-200">Password</label>
+            <label className="block text-sm font-medium mb-2 accent-text">Password</label>
             <input
               type="password"
               value={formData.password}
@@ -290,7 +291,7 @@ const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 
           {/* Confirm Password */}
           <div>
-            <label className="block text-sm font-medium mb-2 text-purple-200">Confirm Password</label>
+            <label className="block text-sm font-medium mb-2 accent-text">Confirm Password</label>
             <input
               type="password"
               value={formData.confirmPassword}
@@ -327,7 +328,8 @@ const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       </div>
 
       {/* Clear Data Button - Fixed Bottom Left */}
-      <div className="fixed bottom-8 left-8 z-50">
+      <div className="fixed bottom-8 left-8 z-50 flex items-center gap-4">
+        <ThemeToggle variant="switch" />
         <button
           onClick={handleClearData}
           className="px-4 py-2 bg-black/80 backdrop-blur-sm border border-white/20 rounded-lg hover:bg-black/90 transition-all text-sm text-red-400 shadow-lg"
