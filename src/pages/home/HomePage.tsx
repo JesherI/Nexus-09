@@ -5,13 +5,15 @@ import { AuthService } from '../../services/auth';
 import { User, UserType } from '../../database';
 
 interface HomePageProps {
+  currentUser?: User | null;
   onLogout: () => Promise<void>;
   onGoToLogin: () => void;
+  onForceClose: () => Promise<void>;
 }
 
-function HomePage({ onLogout, onGoToLogin }: HomePageProps) {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+function HomePage({ currentUser, onLogout, onGoToLogin, onForceClose }: HomePageProps) {
+  const [user, setUser] = useState<User | null>(currentUser || null);
+  const [loading, setLoading] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [showRegistrationForm, setShowRegistrationForm] = useState(false);
   const [showUsersList, setShowUsersList] = useState(false);
@@ -32,23 +34,13 @@ function HomePage({ onLogout, onGoToLogin }: HomePageProps) {
   const [registrationLoading, setRegistrationLoading] = useState(false);
   const [registrationError, setRegistrationError] = useState('');
 
-  useEffect(() => {
-    const loadUser = async () => {
-      try {
-        const token = await AuthService.getStoredToken();
-        if (token) {
-          const currentUser = await AuthService.getCurrentUser(token);
-          setUser(currentUser);
-        }
-      } catch (error) {
-        console.error('Error loading user:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadUser();
-  }, []);
+useEffect(() => {
+    // Ya no hay persistencia de sesión, usar solo el usuario actual
+    if (currentUser) {
+      setUser(currentUser);
+    }
+    setLoading(false);
+  }, [currentUser]);
 
   const loadAllUsers = async () => {
     try {
@@ -165,7 +157,8 @@ const handleRegistrationImageChange = (e: React.ChangeEvent<HTMLInputElement>) =
     }
   };
 
-  const handleDeleteUser = async (_userId: number) => {
+
+const handleDeleteUser = async (_userId: number) => {
     if (window.confirm('Are you sure you want to delete this user?')) {
       try {
         // For now, just refresh the list since delete method doesn't exist
@@ -345,9 +338,18 @@ const handleRegistrationImageChange = (e: React.ChangeEvent<HTMLInputElement>) =
                 <button className="w-full text-left px-3 py-2 accent-bg hover:accent-hover rounded-lg transition-all duration-300 text-sm text-white hover:scale-[1.02] shadow-md">
                   Settings
                 </button>
-                <button className="w-full text-left px-3 py-2 accent-bg hover:accent-hover rounded-lg transition-all duration-300 text-sm text-white hover:scale-[1.02] shadow-md">
-                  Help & Support
-                </button>
+<button className="w-full text-left px-3 py-2 bg-purple-600/20 hover:bg-purple-600/30 rounded-lg transition-colors text-sm">
+                   Help & Support
+                 </button>
+                 {user?.type === 'owner' && (
+                   <button 
+                     onClick={onForceClose}
+                     className="w-full text-left px-3 py-2 bg-red-600/20 hover:bg-red-600/30 rounded-lg transition-colors text-sm text-red-300"
+                   >
+                     🔒 Secure Close App
+                   </button>
+                 )}
+
               </div>
             </div>
           </div>

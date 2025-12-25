@@ -1,5 +1,5 @@
-import { db, User, Session, UserType } from '../database';
-import { hashPassword, generateToken, verifyPassword } from '../utils/auth';
+import { db, User, UserType } from '../database';
+import { hashPassword, verifyPassword } from '../utils/auth';
 
 export class AuthService {
   static async isFirstTime(): Promise<boolean> {
@@ -78,7 +78,7 @@ export class AuthService {
     return { ...newUser, id };
   }
 
-static async login(email: string, password: string): Promise<{ user: User; token: string }> {
+static async login(email: string, password: string): Promise<{ user: User }> {
     const user = await db.users.where('email').equals(email).first();
     
     if (!user || !verifyPassword(password, user.password)) {
@@ -88,33 +88,17 @@ static async login(email: string, password: string): Promise<{ user: User; token
     // Update last login
     await db.users.update(user.id!, { lastLogin: new Date() });
 
-    // Create session
-    const token = generateToken();
-    const session: Session = {
-      userId: user.id!,
-      token,
-      createdAt: new Date(),
-      expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 hours
-    };
-
-    await db.sessions.add(session);
-
-    return { user, token };
+    return { user };
   }
 
-  static async getCurrentUser(token: string): Promise<User | null> {
-    const session = await db.sessions.where('token').equals(token).first();
-    
-    if (!session || session.expiresAt < new Date()) {
-      return null;
-    }
-
-    const user = await db.users.get(session.userId);
-    return user || null;
+static async getCurrentUser(): Promise<User | null> {
+    // Ya no hay persistencia de sesión, siempre retorna null
+    return null;
   }
 
-  static async logout(token: string): Promise<void> {
-    await db.sessions.where('token').equals(token).delete();
+static async logout(): Promise<void> {
+    // Limpiar todas las sesiones activas
+    await db.sessions.clear();
   }
 
   static async updateProfile(userId: number, profileImage: string): Promise<void> {
@@ -122,8 +106,22 @@ static async login(email: string, password: string): Promise<{ user: User; token
   }
 
 static async getStoredToken(): Promise<string | null> {
-    // Always return null to force login every time
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('authToken');
+    }
     return null;
+  }
+
+  static async storeToken(token: string): Promise<void> {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('authToken', token);
+    }
+  }
+
+  static async removeStoredToken(): Promise<void> {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('authToken');
+    }
   }
 
 static async getAllUsers(): Promise<User[]> {

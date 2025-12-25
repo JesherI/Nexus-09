@@ -5,9 +5,10 @@ import StartPage from "./pages/welcome/StartPage";
 import SignUpPage from "./pages/SignUpPage";
 import LoginPage from "./pages/LoginPage";
 import HomePage from "./pages/home/HomePage";
-import { AuthService } from "./services/auth";
-import { UserType } from "./database";
+import { AuthService } from "./service
 import { ThemeProvider } from "./contexts/ThemeContext";
+import { UserType, User } from "./database";
+import { invoke } from "@tauri-apps/api/core";
 
 type Page = 'loading' | 'start' | 'signup' | 'login' | 'home';
 
@@ -16,11 +17,11 @@ function App() {
 
 useEffect(() => {
     const initializeApp = async () => {
-      // Limpiar todas las sesiones existentes para forzar login
-      await AuthService.clearAllSessions();
-      
       // Primero mostrar loading por 10 segundos
       await new Promise(resolve => setTimeout(resolve, 10000));
+
+      // Limpiar cualquier token almacenado por seguridad
+      await AuthService.removeStoredToken();
 
       // Verificar si es la primera vez
       const isFirstTime = await AuthService.isFirstTime();
@@ -60,7 +61,8 @@ const handleSignUp = async (userData: {
 
 const handleLogin = async (email: string, password: string) => {
     try {
-      await AuthService.login(email, password);
+      const { user } = await AuthService.login(email, password);
+      setCurrentUser(user);
       setCurrentPage('home');
     } catch (error) {
       console.error('Login error:', error);
@@ -70,15 +72,22 @@ const handleLogin = async (email: string, password: string) => {
 
 
 
-  const handleLogout = async () => {
+const handleLogout = async () => {
     try {
-      const token = await AuthService.getStoredToken();
-      if (token) {
-        await AuthService.logout(token);
-      }
+      // Limpiar cualquier token almacenado
+      await AuthService.removeStoredToken();
+      setCurrentUser(null);
       setCurrentPage('login');
     } catch (error) {
       console.error('Logout error:', error);
+    }
+  };
+
+  const handleForceClose = async () => {
+    try {
+      await invoke('force_close_app');
+    } catch (error) {
+      console.error('Error closing app:', error);
     }
   };
 
@@ -130,8 +139,8 @@ const handleLogin = async (email: string, password: string) => {
 case 'login':
         return <LoginPage onLogin={handleLogin} />;
 
-      case 'home':
-        return <HomePage onLogout={handleLogout} onGoToLogin={handleGoToLogin} />;
+case 'home':
+        return <HomePage currentUser={currentUser} onLogout={handleLogout} onGoToLogin={handleGoToLogin} onForceClose={handleForceClose} />;
 
       default:
         return null;
