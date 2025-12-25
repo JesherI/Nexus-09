@@ -1,11 +1,13 @@
 import { useState, useEffect } from "react";
 import "./App.css";
+import "./styles/themes.css";
 import StartPage from "./pages/welcome/StartPage";
 import BusinessSetupPage from "./pages/BusinessSetupPage";
 import SignUpPage from "./pages/SignUpPage";
 import LoginPage from "./pages/LoginPage";
 import HomePage from "./pages/home/HomePage";
 import { AuthService } from "./services/auth";
+import { ThemeProvider } from "./contexts/ThemeContext";
 import { UserType, User } from "./database";
 import { invoke } from "@tauri-apps/api/core";
 
@@ -109,11 +111,11 @@ const handleLogout = async () => {
     switch (currentPage) {
       case 'loading':
         return (
-          <main className="min-h-screen bg-neutral-900 text-white flex flex-col items-center justify-center p-8 font-sans relative overflow-hidden">
+          <main className="min-h-screen bg-primary text-primary flex flex-col items-center justify-center p-8 font-sans relative overflow-hidden gradient-bg">
             {/* Background Decorative */}
-            <div className="absolute top-0 -z-10 h-full w-full bg-gradient-to-b from-[#2e1065] via-[#581c87] to-[#6b21a8]">
-              <div className="absolute bottom-auto left-auto right-0 top-20 h-[500px] w-[500px] -translate-x-[50%] rounded-full bg-[rgba(147,51,234,0.2)] opacity-50 blur-[120px]"></div>
-              <div className="absolute bottom-20 left-20 h-[300px] w-[300px] rounded-full bg-[rgba(167,139,250,0.15)] opacity-40 blur-[100px]"></div>
+            <div className="absolute top-0 -z-10 h-full w-full">
+              <div className="absolute bottom-auto left-auto right-0 top-20 h-[500px] w-[500px] -translate-x-[50%] rounded-full decoration-secondary opacity-50 decoration-blur-primary"></div>
+              <div className="absolute bottom-20 left-20 h-[300px] w-[300px] rounded-full decoration-tertiary opacity-40 decoration-blur-secondary"></div>
             </div>
 
             {/* Logo flotante animado */}
@@ -143,7 +145,7 @@ const handleLogout = async () => {
         return <BusinessSetupPage onBusinessSetup={handleBusinessSetup} />;
 
       case 'signup':
-        return <SignUpPage onSignUp={handleSignUp} currentUserRole={currentUser?.type} />;
+        return <SignUpPage onSignUp={handleSignUp} currentUserRole={undefined} />;
 
 case 'login':
         return <LoginPage onLogin={handleLogin} />;
@@ -156,7 +158,11 @@ case 'home':
     }
   };
 
-  return renderPage();
+  return (
+    <ThemeProvider>
+      {renderPage()}
+    </ThemeProvider>
+  );
 }
 
 export default App;

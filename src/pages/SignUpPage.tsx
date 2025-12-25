@@ -3,6 +3,7 @@ import { UserType } from '../database';
 import { AuthService } from '../services/auth';
 import { db } from '../database';
 import NeuralParticles from '../components/NeuralParticles';
+import ThemeToggle from '../components/ThemeToggle';
 
 interface SignUpPageProps {
   onSignUp: (userData: {
@@ -131,6 +132,7 @@ const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
   };
 
   return (
+
     <main className="min-h-screen bg-neutral-900 text-white flex flex-col items-center justify-center p-8 font-sans relative">
       {/* Neural Particles Background */}
       <NeuralParticles />
@@ -177,7 +179,9 @@ const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
                 />
               </label>
             </div>
+
           </div>
+
 
           <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Nombre */}
@@ -219,8 +223,10 @@ const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
               />
             </div>
 
+
             {/* Phone */}
             <div>
+
               <label className="block text-sm font-medium mb-2 text-purple-200">Teléfono</label>
               <input
                 type="tel"
@@ -228,6 +234,7 @@ const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
                 onChange={(e) => setFormData({...formData, phone: e.target.value})}
                 className="w-full px-4 py-3 bg-white/10 border-0 rounded-lg focus:outline-none focus:bg-white/15 transition-all text-white placeholder-gray-400"
                 placeholder="Ingrese su teléfono"
+
                 required
               />
             </div>
@@ -298,6 +305,7 @@ const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
               />
             </div>
 
+
             {/* Confirm Password */}
             <div>
               <label className="block text-sm font-medium mb-2 text-purple-200">Confirm Password</label>
@@ -340,7 +348,8 @@ const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       </div>
 
       {/* Clear Data Button - Fixed Bottom Left */}
-      <div className="fixed bottom-8 left-8 z-50">
+      <div className="fixed bottom-8 left-8 z-50 flex items-center gap-4">
+        <ThemeToggle variant="switch" />
         <button
           onClick={handleClearData}
           className="px-4 py-2 bg-black/80 backdrop-blur-sm border border-white/20 rounded-lg hover:bg-black/90 transition-all text-sm text-red-400 shadow-lg"
