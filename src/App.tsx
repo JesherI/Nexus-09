@@ -5,7 +5,7 @@ import StartPage from "./pages/welcome/StartPage";
 import SignUpPage from "./pages/SignUpPage";
 import LoginPage from "./pages/LoginPage";
 import HomePage from "./pages/home/HomePage";
-import { AuthService } from "./service
+import { AuthService } from "./services/auth";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { UserType, User } from "./database";
 import { invoke } from "@tauri-apps/api/core";
@@ -14,6 +14,7 @@ type Page = 'loading' | 'start' | 'signup' | 'login' | 'home';
 
 function App() {
   const [currentPage, setCurrentPage] = useState<Page>('loading');
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
 
 useEffect(() => {
     const initializeApp = async () => {
