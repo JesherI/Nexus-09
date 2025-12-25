@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { AuthService } from '../services/auth';
 import { User, db } from '../database';
+import NeuralParticles from '../components/NeuralParticles';
 
 interface LoginPageProps {
   onLogin: (email: string, password: string) => Promise<void>;
@@ -69,14 +70,17 @@ const handleUserSelect = (user: User) => {
 
   return (
     <main className="min-h-screen bg-neutral-900 text-white flex flex-col items-center justify-center p-8 font-sans relative">
+      {/* Neural Particles Background */}
+      <NeuralParticles />
+
       {/* Background Decorative */}
-      <div className="absolute top-0 -z-10 h-full w-full bg-gradient-to-b from-[#2e1065] via-[#581c87] to-[#6b21a8]">
+      <div className="absolute top-0 h-full w-full bg-gradient-to-b from-[#2e1065] via-[#581c87] to-[#6b21a8]" style={{ zIndex: 0 }}>
         <div className="absolute bottom-auto left-auto right-0 top-20 h-[500px] w-[500px] -translate-x-[50%] rounded-full bg-[rgba(147,51,234,0.2)] opacity-50 blur-[120px]"></div>
         <div className="absolute bottom-20 left-20 h-[300px] w-[300px] rounded-full bg-[rgba(167,139,250,0.15)] opacity-40 blur-[100px]"></div>
       </div>
 
 {/* User Profile Section - Windows Style */}
-      <div className="mb-12 flex flex-col items-center">
+      <div className="mb-12 flex flex-col items-center" style={{ zIndex: 2 }}>
         {/* User Icon - Large and Centered */}
         <div className="relative">
           <div className="w-32 h-32 md:w-40 md:h-40 rounded-full bg-gradient-to-br from-purple-500/20 to-purple-600/30 border-4 border-purple-400/40 flex items-center justify-center overflow-hidden shadow-2xl mb-4 mx-auto">
@@ -135,7 +139,7 @@ const handleUserSelect = (user: User) => {
       )}
 
       {/* Login Form */}
-      <div className="w-full max-w-sm">
+      <div className="w-full max-w-sm" style={{ zIndex: 2 }}>
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Password Input */}
           <div>
@@ -190,7 +194,7 @@ const handleUserSelect = (user: User) => {
       )}
 
       {/* Clear Data Button - Below Sign In Form */}
-      <div className="mt-8 text-center">
+      <div className="mt-8 text-center" style={{ zIndex: 2 }}>
         <button
           onClick={handleClearData}
           className="text-red-400 hover:text-red-300 text-sm transition-colors underline"

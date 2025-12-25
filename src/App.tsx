@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import "./App.css";
 import StartPage from "./pages/welcome/StartPage";
+import BusinessSetupPage from "./pages/BusinessSetupPage";
 import SignUpPage from "./pages/SignUpPage";
 import LoginPage from "./pages/LoginPage";
 import HomePage from "./pages/home/HomePage";
@@ -8,11 +9,12 @@ import { AuthService } from "./services/auth";
 import { UserType, User } from "./database";
 import { invoke } from "@tauri-apps/api/core";
 
-type Page = 'loading' | 'start' | 'signup' | 'login' | 'home';
+type Page = 'loading' | 'start' | 'business' | 'signup' | 'login' | 'home';
 
 function App() {
   const [currentPage, setCurrentPage] = useState<Page>('loading');
   const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [businessId, setBusinessId] = useState<number | null>(null);
 
 useEffect(() => {
     const initializeApp = async () => {
@@ -35,6 +37,11 @@ useEffect(() => {
   }, []);
 
   const handleStart = () => {
+    setCurrentPage('business');
+  };
+
+  const handleBusinessSetup = (id: number) => {
+    setBusinessId(id);
     setCurrentPage('signup');
   };
 
@@ -50,7 +57,7 @@ const handleSignUp = async (userData: {
     currentUserRole?: UserType;
   }) => {
     try {
-      await AuthService.register(userData);
+      await AuthService.register({ ...userData, businessId: businessId || undefined });
       setCurrentPage('login');
     } catch (error) {
       console.error('Registration error:', error);
@@ -131,6 +138,9 @@ const handleLogout = async () => {
 
       case 'start':
         return <StartPage onStart={handleStart} />;
+
+      case 'business':
+        return <BusinessSetupPage onBusinessSetup={handleBusinessSetup} />;
 
       case 'signup':
         return <SignUpPage onSignUp={handleSignUp} currentUserRole={currentUser?.type} />;

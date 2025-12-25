@@ -17,6 +17,7 @@ export class AuthService {
     profileImage?: string;
     type?: UserType; // Make optional - will be determined automatically
     currentUserRole?: UserType; // Role of the current user making the registration
+    businessId?: number;
   }): Promise<User> {
     // Check if email already exists
     const existingUser = await db.users.where('email').equals(userData.email).first();
@@ -63,6 +64,7 @@ export class AuthService {
     const hashedPassword = hashPassword(userData.password);
     
     const newUser: User = {
+      businessId: userData.businessId,
       nombre: userData.nombre,
       apellidoPaterno: userData.apellidoPaterno,
       apellidoMaterno: userData.apellidoMaterno,
