@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import LanguageSelector from "../components/LanguageSelector";
 import NeuralParticles from "../components/NeuralParticles";
+import ThemeToggle from "../components/ThemeToggle";
 import { db, Business } from "../database";
 
 interface BusinessSetupPageProps {
@@ -73,20 +74,21 @@ function BusinessSetupPage({ onBusinessSetup }: BusinessSetupPageProps) {
   };
 
   return (
-    <main className="min-h-screen bg-neutral-900 text-white flex flex-col items-center justify-center p-4 font-sans relative">
+    <main className="min-h-screen bg-primary text-primary flex flex-col items-center justify-center p-4 font-sans relative">
       {/* Neural Particles Background */}
       <NeuralParticles />
 
-      {/* Background Decorative */}
-      <div className="absolute top-0 h-full w-full bg-gradient-to-b from-[#2e1065] via-[#581c87] to-[#6b21a8]" style={{ zIndex: 0 }}>
-        <div className="absolute bottom-auto left-auto right-0 top-20 h-[500px] w-[500px] -translate-x-[50%] rounded-full bg-[rgba(147,51,234,0.2)] opacity-50 blur-[120px]"></div>
-        <div className="absolute bottom-20 left-20 h-[300px] w-[300px] rounded-full bg-[rgba(167,139,250,0.15)] opacity-40 blur-[100px]"></div>
-      </div>
+       {/* Background Decorative */}
+       <div className="absolute top-0 h-full w-full gradient-bg" style={{ zIndex: 0 }}>
+         <div className="absolute bottom-auto left-auto right-0 top-20 h-[500px] w-[500px] -translate-x-[50%] rounded-full decoration-secondary opacity-50 decoration-blur-primary"></div>
+         <div className="absolute bottom-20 left-20 h-[300px] w-[300px] rounded-full decoration-tertiary opacity-40 decoration-blur-secondary"></div>
+       </div>
 
-      {/* Language Selector - Bottom Right */}
-      <div className="absolute bottom-8 right-8" style={{ zIndex: 2 }}>
-        <LanguageSelector dropdownPosition="up" />
-      </div>
+       {/* Language Selector - Bottom Right */}
+       <div className="absolute bottom-8 right-8 flex items-center gap-4" style={{ zIndex: 2 }}>
+         <ThemeToggle variant="switch" />
+         <LanguageSelector dropdownPosition="up" />
+       </div>
 
       {/* Center Content */}
       <div className="w-full max-w-2xl" style={{ zIndex: 2 }}>
@@ -98,8 +100,8 @@ function BusinessSetupPage({ onBusinessSetup }: BusinessSetupPageProps) {
           </h1>
         </div>
 
-        {/* Form Container */}
-        <div className="bg-black/20 backdrop-blur-lg rounded-2xl border border-white/10 p-8">
+         {/* Form Container */}
+         <div className="glass-card rounded-2xl p-8">
           {/* Logo Upload */}
           <div className="flex justify-center mb-6">
             <div className="relative">
@@ -129,64 +131,64 @@ function BusinessSetupPage({ onBusinessSetup }: BusinessSetupPageProps) {
 
           <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium mb-2 text-purple-200">Nombre del Negocio</label>
+              <label className="block text-sm font-medium mb-2 text-secondary">Nombre del Negocio</label>
               <input
                 type="text"
                 name="name"
                 value={formData.name}
                 onChange={handleInputChange}
                 required
-                className="w-full px-4 py-3 bg-white/10 border-0 rounded-lg focus:outline-none focus:bg-white/15 transition-all text-white placeholder-gray-400"
+                 className="w-full px-4 py-3 input-theme rounded-lg focus:outline-none transition-all"
                 placeholder="Ingrese el nombre del negocio"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-2 text-purple-200">Ubicación</label>
+              <label className="block text-sm font-medium mb-2 text-secondary">Ubicación</label>
               <input
                 type="text"
                 name="location"
                 value={formData.location}
                 onChange={handleInputChange}
                 required
-                className="w-full px-4 py-3 bg-white/10 border-0 rounded-lg focus:outline-none focus:bg-white/15 transition-all text-white placeholder-gray-400"
+                 className="w-full px-4 py-3 input-theme rounded-lg focus:outline-none transition-all"
                 placeholder="Ingrese la ubicación"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-2 text-purple-200">Página Web (Opcional)</label>
+              <label className="block text-sm font-medium mb-2 text-secondary">Página Web (Opcional)</label>
               <input
                 type="url"
                 name="website"
                 value={formData.website}
                 onChange={handleInputChange}
-                className="w-full px-4 py-3 bg-white/10 border-0 rounded-lg focus:outline-none focus:bg-white/15 transition-all text-white placeholder-gray-400"
+                 className="w-full px-4 py-3 input-theme rounded-lg focus:outline-none transition-all"
                 placeholder="https://www.ejemplo.com"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-2 text-purple-200">Correo Electrónico (Opcional)</label>
+              <label className="block text-sm font-medium mb-2 text-secondary">Correo Electrónico (Opcional)</label>
               <input
                 type="email"
                 name="email"
                 value={formData.email}
                 onChange={handleInputChange}
-                className="w-full px-4 py-3 bg-white/10 border-0 rounded-lg focus:outline-none focus:bg-white/15 transition-all text-white placeholder-gray-400"
+                 className="w-full px-4 py-3 input-theme rounded-lg focus:outline-none transition-all"
                 placeholder="correo@ejemplo.com"
               />
             </div>
 
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium mb-2 text-purple-200">Número de Teléfono</label>
+              <label className="block text-sm font-medium mb-2 text-secondary">Número de Teléfono</label>
               <input
                 type="tel"
                 name="phone"
                 value={formData.phone}
                 onChange={handleInputChange}
                 required
-                className="w-full px-4 py-3 bg-white/10 border-0 rounded-lg focus:outline-none focus:bg-white/15 transition-all text-white placeholder-gray-400"
+                 className="w-full px-4 py-3 input-theme rounded-lg focus:outline-none transition-all"
                 placeholder="Ingrese el número de teléfono"
               />
             </div>
@@ -195,7 +197,7 @@ function BusinessSetupPage({ onBusinessSetup }: BusinessSetupPageProps) {
               <button
                 type="submit"
                 disabled={loading}
-                className="bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium py-3 px-8 rounded-lg transition-all duration-200 flex items-center justify-center gap-2"
+                 className="bg-gradient-to-r from-[var(--accent)] to-[var(--accent-light)] hover:from-[var(--accent-light)] hover:to-[var(--accent-hover)] disabled:opacity-50 disabled:cursor-not-allowed text-primary font-medium py-3 px-8 rounded-lg transition-all duration-200 flex items-center justify-center gap-2"
               >
                 {loading ? (
                   <>

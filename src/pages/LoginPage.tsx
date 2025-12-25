@@ -71,15 +71,15 @@ const handleUserSelect = (user: User) => {
 
   return (
 
-    <main className="min-h-screen bg-neutral-900 text-white flex flex-col items-center justify-center p-8 font-sans relative">
+    <main className="min-h-screen bg-primary text-primary flex flex-col items-center justify-center p-8 font-sans relative">
       {/* Neural Particles Background */}
       <NeuralParticles />
 
-      {/* Background Decorative */}
-      <div className="absolute top-0 h-full w-full bg-gradient-to-b from-[#2e1065] via-[#581c87] to-[#6b21a8]" style={{ zIndex: 0 }}>
-        <div className="absolute bottom-auto left-auto right-0 top-20 h-[500px] w-[500px] -translate-x-[50%] rounded-full bg-[rgba(147,51,234,0.2)] opacity-50 blur-[120px]"></div>
-        <div className="absolute bottom-20 left-20 h-[300px] w-[300px] rounded-full bg-[rgba(167,139,250,0.15)] opacity-40 blur-[100px]"></div>
-      </div>
+       {/* Background Decorative */}
+       <div className="absolute top-0 h-full w-full gradient-bg" style={{ zIndex: 0 }}>
+         <div className="absolute bottom-auto left-auto right-0 top-20 h-[500px] w-[500px] -translate-x-[50%] rounded-full decoration-secondary opacity-50 decoration-blur-primary"></div>
+         <div className="absolute bottom-20 left-20 h-[300px] w-[300px] rounded-full decoration-tertiary opacity-40 decoration-blur-secondary"></div>
+       </div>
 
 {/* User Profile Section - Windows Style */}
       <div className="mb-12 flex flex-col items-center" style={{ zIndex: 2 }}>
@@ -108,7 +108,7 @@ const handleUserSelect = (user: User) => {
 
 {/* User List Dropdown */}
       {showUserList && (
-        <div className="fixed bottom-20 left-8 w-80 bg-black/90 backdrop-blur-xl rounded-2xl border border-white/20 shadow-2xl z-50">
+         <div className="fixed bottom-20 left-8 w-80 glass-card rounded-2xl shadow-2xl z-50">
           <div className="p-4 border-b border-white/10">
             <p className="text-sm font-medium text-purple-200">Select User</p>
           </div>
@@ -117,11 +117,11 @@ const handleUserSelect = (user: User) => {
               <button
                 key={user.id}
                 onClick={() => handleUserSelect(user)}
-                className={`w-full px-4 py-4 hover:bg-white/10 transition-colors flex items-center gap-4 ${
-                  selectedUser?.id === user.id ? 'bg-purple-600/20 border-l-4 border-purple-400' : ''
-                }`}
+                 className={`w-full px-4 py-4 hover:bg-secondary transition-colors flex items-center gap-4 ${
+                   selectedUser?.id === user.id ? 'bg-[var(--accent)]/20 border-l-4 border-[var(--accent)]' : ''
+                 }`}
               >
-                <div className="w-12 h-12 rounded-full bg-purple-600/20 border-2 border-purple-400/30 flex items-center justify-center overflow-hidden flex-shrink-0">
+                   <div className="w-12 h-12 rounded-full bg-[var(--accent)]/20 border-2 border-[var(--accent)]/30 flex items-center justify-center overflow-hidden flex-shrink-0">
                   {user.profileImage ? (
                     <img src={user.profileImage} alt="Profile" className="w-full h-full object-cover" />
                   ) : (
@@ -182,18 +182,22 @@ const handleUserSelect = (user: User) => {
 </form>
       </div>
 
-      {/* User Selector - Fixed Bottom Left */}
-      {users.length > 1 && (
-        <div className="fixed bottom-8 left-8 z-50 flex items-center gap-4">
-          <ThemeToggle variant="switch" />
-          <button
-            onClick={() => setShowUserList(!showUserList)}
-            className="px-4 py-2 bg-black/80 backdrop-blur-sm border border-white/20 rounded-lg hover:bg-black/90 transition-all text-sm text-purple-200 shadow-lg"
-          >
-            {users.length} users available
-          </button>
-        </div>
-      )}
+       {/* Theme Toggle - Bottom Right */}
+       <div className="absolute bottom-8 right-8 z-50">
+         <ThemeToggle variant="switch" />
+       </div>
+
+       {/* User Selector - Fixed Bottom Left */}
+       {users.length > 1 && (
+         <div className="fixed bottom-8 left-8 z-50 flex items-center gap-4">
+           <button
+             onClick={() => setShowUserList(!showUserList)}
+             className="px-4 py-2 glass rounded-lg hover:bg-secondary transition-all text-sm text-secondary shadow-lg"
+           >
+             {users.length} users available
+           </button>
+         </div>
+       )}
 
       {/* Clear Data Button - Below Sign In Form */}
 
