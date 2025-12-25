@@ -133,15 +133,15 @@ const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 
   return (
 
-    <main className="min-h-screen bg-neutral-900 text-white flex flex-col items-center justify-center p-8 font-sans relative">
+    <main className="min-h-screen bg-primary text-primary flex flex-col items-center justify-center p-8 font-sans relative">
       {/* Neural Particles Background */}
       <NeuralParticles />
 
-      {/* Background Decorative */}
-      <div className="absolute top-0 h-full w-full bg-gradient-to-b from-[#2e1065] via-[#581c87] to-[#6b21a8]" style={{ zIndex: 0 }}>
-        <div className="absolute bottom-auto left-auto right-0 top-20 h-[500px] w-[500px] -translate-x-[50%] rounded-full bg-[rgba(147,51,234,0.2)] opacity-50 blur-[120px]"></div>
-        <div className="absolute bottom-20 left-20 h-[300px] w-[300px] rounded-full bg-[rgba(167,139,250,0.15)] opacity-40 blur-[100px]"></div>
-      </div>
+       {/* Background Decorative */}
+       <div className="absolute top-0 h-full w-full gradient-bg" style={{ zIndex: 0 }}>
+         <div className="absolute bottom-auto left-auto right-0 top-20 h-[500px] w-[500px] -translate-x-[50%] rounded-full decoration-secondary opacity-50 decoration-blur-primary"></div>
+         <div className="absolute bottom-20 left-20 h-[300px] w-[300px] rounded-full decoration-tertiary opacity-40 decoration-blur-secondary"></div>
+       </div>
 
       {/* Center Content */}
       <div className="w-full max-w-2xl" style={{ zIndex: 2 }}>
@@ -153,8 +153,8 @@ const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
           </h2>
         </div>
 
-        {/* Form Container */}
-        <div className="bg-black/20 backdrop-blur-lg rounded-2xl border border-white/10 p-8">
+         {/* Form Container */}
+         <div className="glass-card rounded-2xl p-8">
           {/* Profile Image Upload */}
           <div className="flex justify-center mb-6">
             <div className="relative">
@@ -186,12 +186,12 @@ const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
           <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Nombre */}
             <div>
-              <label className="block text-sm font-medium mb-2 text-purple-200">Nombre</label>
+              <label className="block text-sm font-medium mb-2 text-secondary">Nombre</label>
               <input
                 type="text"
                 value={formData.nombre}
                 onChange={(e) => setFormData({...formData, nombre: e.target.value})}
-                className="w-full px-4 py-3 bg-white/10 border-0 rounded-lg focus:outline-none focus:bg-white/15 transition-all text-white placeholder-gray-400"
+                className="w-full px-4 py-3 input-theme rounded-lg focus:outline-none transition-all"
                 placeholder="Ingrese su nombre"
                 required
               />
@@ -199,12 +199,12 @@ const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 
             {/* Apellido Paterno */}
             <div>
-              <label className="block text-sm font-medium mb-2 text-purple-200">Apellido Paterno</label>
+              <label className="block text-sm font-medium mb-2 text-secondary">Apellido Paterno</label>
               <input
                 type="text"
                 value={formData.apellidoPaterno}
                 onChange={(e) => setFormData({...formData, apellidoPaterno: e.target.value})}
-                className="w-full px-4 py-3 bg-white/10 border-0 rounded-lg focus:outline-none focus:bg-white/15 transition-all text-white placeholder-gray-400"
+                className="w-full px-4 py-3 input-theme rounded-lg focus:outline-none transition-all"
                 placeholder="Ingrese su apellido paterno"
                 required
               />
@@ -212,12 +212,12 @@ const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 
             {/* Apellido Materno */}
             <div>
-              <label className="block text-sm font-medium mb-2 text-purple-200">Apellido Materno</label>
+              <label className="block text-sm font-medium mb-2 text-secondary">Apellido Materno</label>
               <input
                 type="text"
                 value={formData.apellidoMaterno}
                 onChange={(e) => setFormData({...formData, apellidoMaterno: e.target.value})}
-                className="w-full px-4 py-3 bg-white/10 border-0 rounded-lg focus:outline-none focus:bg-white/15 transition-all text-white placeholder-gray-400"
+                className="w-full px-4 py-3 input-theme rounded-lg focus:outline-none transition-all"
                 placeholder="Ingrese su apellido materno"
                 required
               />
@@ -227,12 +227,12 @@ const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
             {/* Phone */}
             <div>
 
-              <label className="block text-sm font-medium mb-2 text-purple-200">Teléfono</label>
+              <label className="block text-sm font-medium mb-2 text-secondary">Teléfono</label>
               <input
                 type="tel"
                 value={formData.phone}
                 onChange={(e) => setFormData({...formData, phone: e.target.value})}
-                className="w-full px-4 py-3 bg-white/10 border-0 rounded-lg focus:outline-none focus:bg-white/15 transition-all text-white placeholder-gray-400"
+                className="w-full px-4 py-3 input-theme rounded-lg focus:outline-none transition-all"
                 placeholder="Ingrese su teléfono"
 
                 required
@@ -241,12 +241,12 @@ const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 
             {/* Email */}
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium mb-2 text-purple-200">Email</label>
+              <label className="block text-sm font-medium mb-2 text-secondary">Email</label>
               <input
                 type="email"
                 value={formData.email}
                 onChange={(e) => setFormData({...formData, email: e.target.value})}
-                className="w-full px-4 py-3 bg-white/10 border-0 rounded-lg focus:outline-none focus:bg-white/15 transition-all text-white placeholder-gray-400"
+                className="w-full px-4 py-3 input-theme rounded-lg focus:outline-none transition-all"
                 placeholder="Ingrese su email"
                 required
               />
@@ -255,13 +255,13 @@ const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
             {/* User Type - Only show if not first time and currentUserRole is provided */}
             {showTypeSelector && currentUserRole && (
               <div className="md:col-span-2">
-                <label className="block text-sm font-medium mb-2 text-purple-200">
+                <label className="block text-sm font-medium mb-2 text-secondary">
                   User Type {currentUserRole === 'owner' ? '(Admin)' : '(Cashier)'}
                 </label>
                 <select
                   value={formData.type}
                   onChange={(e) => setFormData({...formData, type: e.target.value as UserType})}
-                  className="w-full px-4 py-3 bg-white/10 border-0 rounded-lg focus:outline-none focus:bg-white/15 transition-all text-white"
+                   className="w-full px-4 py-3 input-theme rounded-lg focus:outline-none transition-all"
                   required
                   disabled
                 >
@@ -282,7 +282,7 @@ const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 
             {/* First Time Info */}
             {isFirstTime && (
-              <div className="md:col-span-2 p-3 bg-purple-500/20 border border-purple-500/30 rounded-lg text-purple-200 text-sm">
+              <div className="md:col-span-2 p-3 bg-purple-500/20 border border-purple-500/30 rounded-lg text-secondary text-sm">
                 <div className="flex items-center gap-2">
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -294,12 +294,12 @@ const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 
             {/* Password */}
             <div>
-              <label className="block text-sm font-medium mb-2 text-purple-200">Password</label>
+              <label className="block text-sm font-medium mb-2 text-secondary">Password</label>
               <input
                 type="password"
                 value={formData.password}
                 onChange={(e) => setFormData({...formData, password: e.target.value})}
-                className="w-full px-4 py-3 bg-white/10 border-0 rounded-lg focus:outline-none focus:bg-white/15 transition-all text-white placeholder-gray-400"
+                className="w-full px-4 py-3 input-theme rounded-lg focus:outline-none transition-all"
                 placeholder="Enter password"
                 required
               />
@@ -308,12 +308,12 @@ const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 
             {/* Confirm Password */}
             <div>
-              <label className="block text-sm font-medium mb-2 text-purple-200">Confirm Password</label>
+              <label className="block text-sm font-medium mb-2 text-secondary">Confirm Password</label>
               <input
                 type="password"
                 value={formData.confirmPassword}
                 onChange={(e) => setFormData({...formData, confirmPassword: e.target.value})}
-                className="w-full px-4 py-3 bg-white/10 border-0 rounded-lg focus:outline-none focus:bg-white/15 transition-all text-white placeholder-gray-400"
+                className="w-full px-4 py-3 input-theme rounded-lg focus:outline-none transition-all"
                 placeholder="Confirm password"
                 required
               />
@@ -331,7 +331,7 @@ const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
               <button
                 type="submit"
                 disabled={loading}
-                className="bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium py-3 px-8 rounded-lg transition-all duration-200 flex items-center justify-center gap-2"
+                 className="bg-gradient-to-r from-[var(--accent)] to-[var(--accent-light)] hover:from-[var(--accent-light)] hover:to-[var(--accent-hover)] disabled:opacity-50 disabled:cursor-not-allowed text-primary font-medium py-3 px-8 rounded-lg transition-all duration-200 flex items-center justify-center gap-2"
               >
                 {loading ? (
                   <>
