@@ -7,9 +7,10 @@ interface HomePageProps {
   currentUser?: User | null;
   onLogout: () => Promise<void>;
   onGoToLogin: () => void;
+  onForceClose: () => Promise<void>;
 }
 
-function HomePage({ currentUser, onLogout, onGoToLogin }: HomePageProps) {
+function HomePage({ currentUser, onLogout, onGoToLogin, onForceClose }: HomePageProps) {
   const [user, setUser] = useState<User | null>(currentUser || null);
   const [loading, setLoading] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
@@ -33,23 +34,11 @@ function HomePage({ currentUser, onLogout, onGoToLogin }: HomePageProps) {
   const [registrationError, setRegistrationError] = useState('');
 
 useEffect(() => {
-    if (!currentUser) {
-      const loadUser = async () => {
-        try {
-          const token = await AuthService.getStoredToken();
-          if (token) {
-            const currentUser = await AuthService.getCurrentUser(token);
-            setUser(currentUser);
-          }
-        } catch (error) {
-          console.error('Error loading user:', error);
-        } finally {
-          setLoading(false);
-        }
-      };
-
-      loadUser();
+    // Ya no hay persistencia de sesión, usar solo el usuario actual
+    if (currentUser) {
+      setUser(currentUser);
     }
+    setLoading(false);
   }, [currentUser]);
 
   const loadAllUsers = async () => {
@@ -346,9 +335,17 @@ const handleDeleteUser = async (_userId: number) => {
                 <button className="w-full text-left px-3 py-2 bg-purple-600/20 hover:bg-purple-600/30 rounded-lg transition-colors text-sm">
                   Settings
                 </button>
-                <button className="w-full text-left px-3 py-2 bg-purple-600/20 hover:bg-purple-600/30 rounded-lg transition-colors text-sm">
-                  Help & Support
-                </button>
+<button className="w-full text-left px-3 py-2 bg-purple-600/20 hover:bg-purple-600/30 rounded-lg transition-colors text-sm">
+                   Help & Support
+                 </button>
+                 {user?.type === 'owner' && (
+                   <button 
+                     onClick={onForceClose}
+                     className="w-full text-left px-3 py-2 bg-red-600/20 hover:bg-red-600/30 rounded-lg transition-colors text-sm text-red-300"
+                   >
+                     🔒 Secure Close App
+                   </button>
+                 )}
               </div>
             </div>
           </div>

@@ -6,6 +6,7 @@ import LoginPage from "./pages/LoginPage";
 import HomePage from "./pages/home/HomePage";
 import { AuthService } from "./services/auth";
 import { UserType, User } from "./database";
+import { invoke } from "@tauri-apps/api/core";
 
 type Page = 'loading' | 'start' | 'signup' | 'login' | 'home';
 
@@ -18,19 +19,8 @@ useEffect(() => {
       // Primero mostrar loading por 10 segundos
       await new Promise(resolve => setTimeout(resolve, 10000));
 
-      // Check for stored token
-      const token = await AuthService.getStoredToken();
-      if (token) {
-        const currentUser = await AuthService.getCurrentUser(token);
-        if (currentUser) {
-          setCurrentUser(currentUser);
-          setCurrentPage('home');
-          return;
-        } else {
-          // Token is invalid, remove it
-          await AuthService.removeStoredToken();
-        }
-      }
+      // Limpiar cualquier token almacenado por seguridad
+      await AuthService.removeStoredToken();
 
       // Verificar si es la primera vez
       const isFirstTime = await AuthService.isFirstTime();
@@ -70,8 +60,7 @@ const handleSignUp = async (userData: {
 
 const handleLogin = async (email: string, password: string) => {
     try {
-      const { user, token } = await AuthService.login(email, password);
-      await AuthService.storeToken(token);
+      const { user } = await AuthService.login(email, password);
       setCurrentUser(user);
       setCurrentPage('home');
     } catch (error) {
@@ -84,15 +73,20 @@ const handleLogin = async (email: string, password: string) => {
 
 const handleLogout = async () => {
     try {
-      const token = await AuthService.getStoredToken();
-      if (token) {
-        await AuthService.logout(token);
-      }
+      // Limpiar cualquier token almacenado
       await AuthService.removeStoredToken();
       setCurrentUser(null);
       setCurrentPage('login');
     } catch (error) {
       console.error('Logout error:', error);
+    }
+  };
+
+  const handleForceClose = async () => {
+    try {
+      await invoke('force_close_app');
+    } catch (error) {
+      console.error('Error closing app:', error);
     }
   };
 
@@ -145,7 +139,7 @@ case 'login':
         return <LoginPage onLogin={handleLogin} />;
 
 case 'home':
-        return <HomePage currentUser={currentUser} onLogout={handleLogout} onGoToLogin={handleGoToLogin} />;
+        return <HomePage currentUser={currentUser} onLogout={handleLogout} onGoToLogin={handleGoToLogin} onForceClose={handleForceClose} />;
 
       default:
         return null;
