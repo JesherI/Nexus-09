@@ -4,13 +4,14 @@ import { AuthService } from '../../services/auth';
 import { User, UserType } from '../../database';
 
 interface HomePageProps {
+  currentUser?: User | null;
   onLogout: () => Promise<void>;
   onGoToLogin: () => void;
 }
 
-function HomePage({ onLogout, onGoToLogin }: HomePageProps) {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+function HomePage({ currentUser, onLogout, onGoToLogin }: HomePageProps) {
+  const [user, setUser] = useState<User | null>(currentUser || null);
+  const [loading, setLoading] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [showRegistrationForm, setShowRegistrationForm] = useState(false);
   const [showUsersList, setShowUsersList] = useState(false);
@@ -31,23 +32,25 @@ function HomePage({ onLogout, onGoToLogin }: HomePageProps) {
   const [registrationLoading, setRegistrationLoading] = useState(false);
   const [registrationError, setRegistrationError] = useState('');
 
-  useEffect(() => {
-    const loadUser = async () => {
-      try {
-        const token = await AuthService.getStoredToken();
-        if (token) {
-          const currentUser = await AuthService.getCurrentUser(token);
-          setUser(currentUser);
+useEffect(() => {
+    if (!currentUser) {
+      const loadUser = async () => {
+        try {
+          const token = await AuthService.getStoredToken();
+          if (token) {
+            const currentUser = await AuthService.getCurrentUser(token);
+            setUser(currentUser);
+          }
+        } catch (error) {
+          console.error('Error loading user:', error);
+        } finally {
+          setLoading(false);
         }
-      } catch (error) {
-        console.error('Error loading user:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
+      };
 
-    loadUser();
-  }, []);
+      loadUser();
+    }
+  }, [currentUser]);
 
   const loadAllUsers = async () => {
     try {
@@ -164,7 +167,7 @@ const handleRegistrationImageChange = (e: React.ChangeEvent<HTMLInputElement>) =
     }
   };
 
-  const handleDeleteUser = async (userId: number) => {
+const handleDeleteUser = async (_userId: number) => {
     if (window.confirm('Are you sure you want to delete this user?')) {
       try {
         // For now, just refresh the list since delete method doesn't exist

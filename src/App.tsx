@@ -15,11 +15,22 @@ function App() {
 
 useEffect(() => {
     const initializeApp = async () => {
-      // Limpiar todas las sesiones existentes para forzar login
-      await AuthService.clearAllSessions();
-      
       // Primero mostrar loading por 10 segundos
       await new Promise(resolve => setTimeout(resolve, 10000));
+
+      // Check for stored token
+      const token = await AuthService.getStoredToken();
+      if (token) {
+        const currentUser = await AuthService.getCurrentUser(token);
+        if (currentUser) {
+          setCurrentUser(currentUser);
+          setCurrentPage('home');
+          return;
+        } else {
+          // Token is invalid, remove it
+          await AuthService.removeStoredToken();
+        }
+      }
 
       // Verificar si es la primera vez
       const isFirstTime = await AuthService.isFirstTime();
@@ -59,7 +70,9 @@ const handleSignUp = async (userData: {
 
 const handleLogin = async (email: string, password: string) => {
     try {
-      await AuthService.login(email, password);
+      const { user, token } = await AuthService.login(email, password);
+      await AuthService.storeToken(token);
+      setCurrentUser(user);
       setCurrentPage('home');
     } catch (error) {
       console.error('Login error:', error);
@@ -69,12 +82,14 @@ const handleLogin = async (email: string, password: string) => {
 
 
 
-  const handleLogout = async () => {
+const handleLogout = async () => {
     try {
       const token = await AuthService.getStoredToken();
       if (token) {
         await AuthService.logout(token);
       }
+      await AuthService.removeStoredToken();
+      setCurrentUser(null);
       setCurrentPage('login');
     } catch (error) {
       console.error('Logout error:', error);
@@ -129,8 +144,8 @@ const handleLogin = async (email: string, password: string) => {
 case 'login':
         return <LoginPage onLogin={handleLogin} />;
 
-      case 'home':
-        return <HomePage onLogout={handleLogout} onGoToLogin={handleGoToLogin} />;
+case 'home':
+        return <HomePage currentUser={currentUser} onLogout={handleLogout} onGoToLogin={handleGoToLogin} />;
 
       default:
         return null;

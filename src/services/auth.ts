@@ -122,8 +122,22 @@ static async login(email: string, password: string): Promise<{ user: User; token
   }
 
 static async getStoredToken(): Promise<string | null> {
-    // Always return null to force login every time
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('authToken');
+    }
     return null;
+  }
+
+  static async storeToken(token: string): Promise<void> {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('authToken', token);
+    }
+  }
+
+  static async removeStoredToken(): Promise<void> {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('authToken');
+    }
   }
 
 static async getAllUsers(): Promise<User[]> {
