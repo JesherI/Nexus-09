@@ -10,12 +10,15 @@
     "frontendDist": "../dist"
   },
   "app": {
-    "windows": [
+"windows": [
       {
         "title": "Nexus 09",
         "maximized": true,
         "decorations": false,
-        "transparent": true
+        "transparent": true,
+        "closable": false,
+        "minimizable": false,
+        "maximizable": false
       }
     ],
     "security": {

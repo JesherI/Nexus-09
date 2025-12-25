@@ -1,16 +1,19 @@
 import { useState, useEffect } from 'react';
 import LanguageSelector from '../../components/LanguageSelector';
+import ThemeToggle from '../../components/ThemeToggle';
 import { AuthService } from '../../services/auth';
 import { User, UserType } from '../../database';
 
 interface HomePageProps {
+  currentUser?: User | null;
   onLogout: () => Promise<void>;
   onGoToLogin: () => void;
+  onForceClose: () => Promise<void>;
 }
 
-function HomePage({ onLogout, onGoToLogin }: HomePageProps) {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+function HomePage({ currentUser, onLogout, onGoToLogin, onForceClose }: HomePageProps) {
+  const [user, setUser] = useState<User | null>(currentUser || null);
+  const [loading, setLoading] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [showRegistrationForm, setShowRegistrationForm] = useState(false);
   const [showUsersList, setShowUsersList] = useState(false);
@@ -31,23 +34,13 @@ function HomePage({ onLogout, onGoToLogin }: HomePageProps) {
   const [registrationLoading, setRegistrationLoading] = useState(false);
   const [registrationError, setRegistrationError] = useState('');
 
-  useEffect(() => {
-    const loadUser = async () => {
-      try {
-        const token = await AuthService.getStoredToken();
-        if (token) {
-          const currentUser = await AuthService.getCurrentUser(token);
-          setUser(currentUser);
-        }
-      } catch (error) {
-        console.error('Error loading user:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadUser();
-  }, []);
+useEffect(() => {
+    // Ya no hay persistencia de sesión, usar solo el usuario actual
+    if (currentUser) {
+      setUser(currentUser);
+    }
+    setLoading(false);
+  }, [currentUser]);
 
   const loadAllUsers = async () => {
     try {
@@ -164,7 +157,8 @@ const handleRegistrationImageChange = (e: React.ChangeEvent<HTMLInputElement>) =
     }
   };
 
-  const handleDeleteUser = async (userId: number) => {
+
+const handleDeleteUser = async (_userId: number) => {
     if (window.confirm('Are you sure you want to delete this user?')) {
       try {
         // For now, just refresh the list since delete method doesn't exist
@@ -181,18 +175,18 @@ const handleRegistrationImageChange = (e: React.ChangeEvent<HTMLInputElement>) =
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-neutral-900 text-white flex items-center justify-center">
+      <main className="min-h-screen bg-primary text-primary flex items-center justify-center gradient-bg">
         <div className="w-8 h-8 border-2 border-purple-400 border-t-transparent rounded-full animate-spin"></div>
       </main>
     );
   }
 
   return (
-    <main className="min-h-screen bg-neutral-900 text-white relative">
+    <main className="min-h-screen bg-primary text-primary relative gradient-bg">
       {/* Background Decorative */}
-      <div className="absolute top-0 -z-10 h-full w-full bg-gradient-to-b from-[#2e1065] via-[#581c87] to-[#6b21a8]">
-        <div className="absolute bottom-auto left-auto right-0 top-20 h-[500px] w-[500px] -translate-x-[50%] rounded-full bg-[rgba(147,51,234,0.2)] opacity-50 blur-[120px]"></div>
-        <div className="absolute bottom-20 left-20 h-[300px] w-[300px] rounded-full bg-[rgba(167,139,250,0.15)] opacity-40 blur-[100px]"></div>
+      <div className="absolute top-0 -z-10 h-full w-full">
+        <div className="absolute bottom-auto left-auto right-0 top-20 h-[500px] w-[500px] -translate-x-[50%] rounded-full decoration-secondary opacity-50 decoration-blur-primary"></div>
+        <div className="absolute bottom-20 left-20 h-[300px] w-[300px] rounded-full decoration-tertiary opacity-40 decoration-blur-secondary"></div>
       </div>
 
       {/* Header */}
@@ -201,8 +195,8 @@ const handleRegistrationImageChange = (e: React.ChangeEvent<HTMLInputElement>) =
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
             <div className="flex items-center">
-              <img src="/icon.png" alt="Nexus" className="w-8 h-8 mr-3" />
-              <h1 className="text-xl font-bold bg-gradient-to-r from-purple-300 to-purple-100 bg-clip-text text-transparent">
+              <img src="/icon.png" alt="Nexus" className="w-8 h-8 mr-3 logo-enhanced" />
+              <h1 className="text-xl font-bold text-enhanced">
                 Nexus
               </h1>
             </div>
@@ -210,6 +204,7 @@ const handleRegistrationImageChange = (e: React.ChangeEvent<HTMLInputElement>) =
             {/* Profile Section */}
             <div className="flex items-center gap-4">
               <LanguageSelector dropdownPosition="down" />
+              <ThemeToggle variant="switch" />
               
               <div className="relative z-50">
                 <button
@@ -285,7 +280,7 @@ const handleRegistrationImageChange = (e: React.ChangeEvent<HTMLInputElement>) =
       {/* Main Content */}
       <main className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="text-center">
-          <h2 className="text-4xl font-bold mb-4 bg-gradient-to-r from-purple-300 to-purple-100 bg-clip-text text-transparent">
+          <h2 className="text-4xl font-bold mb-4 text-enhanced">
             Welcome back, {user?.nombre} {user?.apellidoPaterno}!
           </h2>
           <p className="text-xl text-purple-200 mb-8">
@@ -294,41 +289,41 @@ const handleRegistrationImageChange = (e: React.ChangeEvent<HTMLInputElement>) =
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-12">
             {/* Quick Stats */}
-            <div className="bg-black/20 backdrop-blur-lg rounded-xl border border-white/10 p-6">
-              <h3 className="text-lg font-semibold mb-4 text-purple-300">Quick Stats</h3>
+            <div className="glass-card rounded-xl p-6 hover:scale-[1.02] transition-all duration-300">
+              <h3 className="text-lg font-semibold mb-4 text-gradient">Quick Stats</h3>
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-gray-400">Last Login:</span>
-                  <span>{user?.lastLogin ? new Date(user.lastLogin).toLocaleDateString() : 'First time'}</span>
+                  <span className="text-tertiary">Last Login:</span>
+                  <span className="text-secondary">{user?.lastLogin ? new Date(user.lastLogin).toLocaleDateString() : 'First time'}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-400">Member Since:</span>
-                  <span>{user?.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'Unknown'}</span>
+                  <span className="text-tertiary">Member Since:</span>
+                  <span className="text-secondary">{user?.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'Unknown'}</span>
                 </div>
               </div>
             </div>
 
             {/* Recent Activity */}
-            <div className="bg-black/20 backdrop-blur-lg rounded-xl border border-white/10 p-6">
-              <h3 className="text-lg font-semibold mb-4 text-purple-300">Recent Activity</h3>
-              <p className="text-sm text-gray-400">No recent activity</p>
+            <div className="glass-card rounded-xl p-6 hover:scale-[1.02] transition-all duration-300">
+              <h3 className="text-lg font-semibold mb-4 text-gradient">Recent Activity</h3>
+              <p className="text-sm text-tertiary">No recent activity</p>
             </div>
 
 {/* Quick Actions */}
-            <div className="bg-black/20 backdrop-blur-lg rounded-xl border border-white/10 p-6">
-              <h3 className="text-lg font-semibold mb-4 text-purple-300">Quick Actions</h3>
+            <div className="glass-card rounded-xl p-6 hover:scale-[1.02] transition-all duration-300">
+              <h3 className="text-lg font-semibold mb-4 text-gradient">Quick Actions</h3>
               <div className="space-y-2">
 {(user?.type === 'owner' || user?.type === 'admin') && (
                   <>
                     <button 
                       onClick={() => setShowRegistrationForm(true)}
-                      className="w-full text-left px-3 py-2 bg-purple-600/20 hover:bg-purple-600/30 rounded-lg transition-colors text-sm"
+                      className="w-full text-left px-3 py-2 accent-bg hover:accent-hover rounded-lg transition-all duration-300 text-sm text-white hover:scale-[1.02] shadow-md"
                     >
                       Register New User
                     </button>
                     <button 
                       onClick={() => setShowUsersList(true)}
-                      className="w-full text-left px-3 py-2 bg-purple-600/20 hover:bg-purple-600/30 rounded-lg transition-colors text-sm"
+                      className="w-full text-left px-3 py-2 accent-bg hover:accent-hover rounded-lg transition-all duration-300 text-sm text-white hover:scale-[1.02] shadow-md"
                     >
                       View All Users
                     </button>
@@ -336,29 +331,38 @@ const handleRegistrationImageChange = (e: React.ChangeEvent<HTMLInputElement>) =
                 )}
                 <button 
                   onClick={onGoToLogin}
-                  className="w-full text-left px-3 py-2 bg-purple-600/20 hover:bg-purple-600/30 rounded-lg transition-colors text-sm"
+                  className="w-full text-left px-3 py-2 accent-bg hover:accent-hover rounded-lg transition-all duration-300 text-sm text-white hover:scale-[1.02] shadow-md"
                 >
                   Go to Login
                 </button>
-                <button className="w-full text-left px-3 py-2 bg-purple-600/20 hover:bg-purple-600/30 rounded-lg transition-colors text-sm">
+                <button className="w-full text-left px-3 py-2 accent-bg hover:accent-hover rounded-lg transition-all duration-300 text-sm text-white hover:scale-[1.02] shadow-md">
                   Settings
                 </button>
-                <button className="w-full text-left px-3 py-2 bg-purple-600/20 hover:bg-purple-600/30 rounded-lg transition-colors text-sm">
-                  Help & Support
-                </button>
+<button className="w-full text-left px-3 py-2 bg-purple-600/20 hover:bg-purple-600/30 rounded-lg transition-colors text-sm">
+                   Help & Support
+                 </button>
+                 {user?.type === 'owner' && (
+                   <button 
+                     onClick={onForceClose}
+                     className="w-full text-left px-3 py-2 bg-red-600/20 hover:bg-red-600/30 rounded-lg transition-colors text-sm text-red-300"
+                   >
+                     🔒 Secure Close App
+                   </button>
+                 )}
+
               </div>
             </div>
           </div>
         </div>
       </main>
 
-{/* Registration Form Full Screen */}
+      {/* Registration Form Full Screen */}
       {showRegistrationForm && (
-        <div className="min-h-screen bg-neutral-900 text-white relative">
+        <div className="min-h-screen bg-primary text-primary relative">
           {/* Background Decorative */}
-          <div className="absolute top-0 -z-10 h-full w-full bg-gradient-to-b from-[#2e1065] via-[#581c87] to-[#6b21a8]">
-            <div className="absolute bottom-auto left-auto right-0 top-20 h-[500px] w-[500px] -translate-x-[50%] rounded-full bg-[rgba(147,51,234,0.2)] opacity-50 blur-[120px]"></div>
-            <div className="absolute bottom-20 left-20 h-[300px] w-[300px] rounded-full bg-[rgba(167,139,250,0.15)] opacity-40 blur-[100px]"></div>
+          <div className="absolute top-0 -z-10 h-full w-full">
+            <div className="absolute bottom-auto left-auto right-0 top-20 h-[500px] w-[500px] -translate-x-[50%] rounded-full decoration-secondary opacity-50 decoration-blur-primary"></div>
+            <div className="absolute bottom-20 left-20 h-[300px] w-[300px] rounded-full decoration-tertiary opacity-40 decoration-blur-secondary"></div>
           </div>
 
           {/* Header */}
@@ -551,11 +555,11 @@ const handleRegistrationImageChange = (e: React.ChangeEvent<HTMLInputElement>) =
 
       {/* Users List Full Screen */}
       {showUsersList && (
-        <div className="min-h-screen bg-neutral-900 text-white relative">
+        <div className="min-h-screen bg-primary text-primary relative">
           {/* Background Decorative */}
-          <div className="absolute top-0 -z-10 h-full w-full bg-gradient-to-b from-[#2e1065] via-[#581c87] to-[#6b21a8]">
-            <div className="absolute bottom-auto left-auto right-0 top-20 h-[500px] w-[500px] -translate-x-[50%] rounded-full bg-[rgba(147,51,234,0.2)] opacity-50 blur-[120px]"></div>
-            <div className="absolute bottom-20 left-20 h-[300px] w-[300px] rounded-full bg-[rgba(167,139,250,0.15)] opacity-40 blur-[100px]"></div>
+          <div className="absolute top-0 -z-10 h-full w-full">
+            <div className="absolute bottom-auto left-auto right-0 top-20 h-[500px] w-[500px] -translate-x-[50%] rounded-full decoration-secondary opacity-50 decoration-blur-primary"></div>
+            <div className="absolute bottom-20 left-20 h-[300px] w-[300px] rounded-full decoration-tertiary opacity-40 decoration-blur-secondary"></div>
           </div>
 
           {/* Header */}
@@ -590,42 +594,42 @@ const handleRegistrationImageChange = (e: React.ChangeEvent<HTMLInputElement>) =
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {allUsers.map((user) => (
-                  <div key={user.id} className="bg-black/20 backdrop-blur-lg rounded-xl border border-white/10 p-6">
-                    <div className="flex items-center gap-4 mb-4">
-                      <div className="w-16 h-16 rounded-full bg-purple-600/20 border-2 border-purple-400/30 flex items-center justify-center overflow-hidden">
-                        {user.profileImage ? (
-                          <img src={user.profileImage} alt="Profile" className="w-full h-full object-cover" />
-                        ) : (
-                          <svg className="w-8 h-8 text-purple-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                          </svg>
-                        )}
-                      </div>
-                      <div>
-                        <h3 className="font-semibold text-lg">
-                          {user.nombre} {user.apellidoPaterno}
-                        </h3>
-                        <p className="text-sm text-gray-400 capitalize">{user.type}</p>
-                      </div>
-                    </div>
-                    
-                    <div className="space-y-2 text-sm text-gray-300">
-                      <p><span className="text-gray-500">Email:</span> {user.email}</p>
-                      <p><span className="text-gray-500">Phone:</span> {user.phone}</p>
-                      <p><span className="text-gray-500">Member:</span> {new Date(user.createdAt).toLocaleDateString()}</p>
-                    </div>
-                    
-                    <div className="mt-4 flex gap-2">
-                      <button
-                        onClick={() => handleDeleteUser(user.id!)}
-                        className="flex-1 px-3 py-2 bg-red-500/20 hover:bg-red-500/30 rounded-lg transition-colors text-red-300 text-sm"
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  </div>
-                ))}
+                 {allUsers.map((user) => (
+                   <div key={user.id} className="glass-card rounded-xl p-6 hover:scale-[1.02] transition-all duration-300">
+                     <div className="flex items-center gap-4 mb-4">
+                       <div className="w-16 h-16 rounded-full accent-bg/20 border-2 accent/30 flex items-center justify-center overflow-hidden">
+                         {user.profileImage ? (
+                           <img src={user.profileImage} alt="Profile" className="w-full h-full object-cover" />
+                         ) : (
+                           <svg className="w-8 h-8 accent-text" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                           </svg>
+                         )}
+                       </div>
+                       <div>
+                         <h3 className="font-semibold text-lg text-gradient">
+                           {user.nombre} {user.apellidoPaterno}
+                         </h3>
+                         <p className="text-sm text-tertiary capitalize">{user.type}</p>
+                       </div>
+                     </div>
+                     
+                     <div className="space-y-2 text-sm text-secondary">
+                       <p><span className="text-tertiary">Email:</span> {user.email}</p>
+                       <p><span className="text-tertiary">Phone:</span> {user.phone}</p>
+                       <p><span className="text-tertiary">Member:</span> {new Date(user.createdAt).toLocaleDateString()}</p>
+                     </div>
+                     
+                     <div className="mt-4 flex gap-2">
+                       <button
+                         onClick={() => handleDeleteUser(user.id!)}
+                         className="flex-1 px-3 py-2 bg-red-500/20 hover:bg-red-500/30 rounded-lg transition-all duration-300 text-red-300 text-sm hover:scale-[1.02]"
+                       >
+                         Delete
+                       </button>
+                     </div>
+                   </div>
+                 ))}
               </div>
             )}
           </div>

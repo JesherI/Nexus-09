@@ -1,25 +1,30 @@
 import { useState, useEffect } from "react";
 import "./App.css";
+import "./styles/themes.css";
 import StartPage from "./pages/welcome/StartPage";
+import BusinessSetupPage from "./pages/BusinessSetupPage";
 import SignUpPage from "./pages/SignUpPage";
 import LoginPage from "./pages/LoginPage";
 import HomePage from "./pages/home/HomePage";
 import { AuthService } from "./services/auth";
+import { ThemeProvider } from "./contexts/ThemeContext";
 import { UserType, User } from "./database";
+import { invoke } from "@tauri-apps/api/core";
 
-type Page = 'loading' | 'start' | 'signup' | 'login' | 'home';
+type Page = 'loading' | 'start' | 'business' | 'signup' | 'login' | 'home';
 
 function App() {
   const [currentPage, setCurrentPage] = useState<Page>('loading');
   const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [businessId, setBusinessId] = useState<number | null>(null);
 
 useEffect(() => {
     const initializeApp = async () => {
-      // Limpiar todas las sesiones existentes para forzar login
-      await AuthService.clearAllSessions();
-      
       // Primero mostrar loading por 10 segundos
       await new Promise(resolve => setTimeout(resolve, 10000));
+
+      // Limpiar cualquier token almacenado por seguridad
+      await AuthService.removeStoredToken();
 
       // Verificar si es la primera vez
       const isFirstTime = await AuthService.isFirstTime();
@@ -34,6 +39,11 @@ useEffect(() => {
   }, []);
 
   const handleStart = () => {
+    setCurrentPage('business');
+  };
+
+  const handleBusinessSetup = (id: number) => {
+    setBusinessId(id);
     setCurrentPage('signup');
   };
 
@@ -49,7 +59,7 @@ const handleSignUp = async (userData: {
     currentUserRole?: UserType;
   }) => {
     try {
-      await AuthService.register(userData);
+      await AuthService.register({ ...userData, businessId: businessId || undefined });
       setCurrentPage('login');
     } catch (error) {
       console.error('Registration error:', error);
@@ -59,7 +69,8 @@ const handleSignUp = async (userData: {
 
 const handleLogin = async (email: string, password: string) => {
     try {
-      await AuthService.login(email, password);
+      const { user } = await AuthService.login(email, password);
+      setCurrentUser(user);
       setCurrentPage('home');
     } catch (error) {
       console.error('Login error:', error);
@@ -69,15 +80,22 @@ const handleLogin = async (email: string, password: string) => {
 
 
 
-  const handleLogout = async () => {
+const handleLogout = async () => {
     try {
-      const token = await AuthService.getStoredToken();
-      if (token) {
-        await AuthService.logout(token);
-      }
+      // Limpiar cualquier token almacenado
+      await AuthService.removeStoredToken();
+      setCurrentUser(null);
       setCurrentPage('login');
     } catch (error) {
       console.error('Logout error:', error);
+    }
+  };
+
+  const handleForceClose = async () => {
+    try {
+      await invoke('force_close_app');
+    } catch (error) {
+      console.error('Error closing app:', error);
     }
   };
 
@@ -93,11 +111,11 @@ const handleLogin = async (email: string, password: string) => {
     switch (currentPage) {
       case 'loading':
         return (
-          <main className="min-h-screen bg-neutral-900 text-white flex flex-col items-center justify-center p-8 font-sans relative overflow-hidden">
+          <main className="min-h-screen bg-primary text-primary flex flex-col items-center justify-center p-8 font-sans relative overflow-hidden gradient-bg">
             {/* Background Decorative */}
-            <div className="absolute top-0 -z-10 h-full w-full bg-gradient-to-b from-[#2e1065] via-[#581c87] to-[#6b21a8]">
-              <div className="absolute bottom-auto left-auto right-0 top-20 h-[500px] w-[500px] -translate-x-[50%] rounded-full bg-[rgba(147,51,234,0.2)] opacity-50 blur-[120px]"></div>
-              <div className="absolute bottom-20 left-20 h-[300px] w-[300px] rounded-full bg-[rgba(167,139,250,0.15)] opacity-40 blur-[100px]"></div>
+            <div className="absolute top-0 -z-10 h-full w-full">
+              <div className="absolute bottom-auto left-auto right-0 top-20 h-[500px] w-[500px] -translate-x-[50%] rounded-full decoration-secondary opacity-50 decoration-blur-primary"></div>
+              <div className="absolute bottom-20 left-20 h-[300px] w-[300px] rounded-full decoration-tertiary opacity-40 decoration-blur-secondary"></div>
             </div>
 
             {/* Logo flotante animado */}
@@ -112,9 +130,9 @@ const handleLogin = async (email: string, password: string) => {
             {/* Loading indicator */}
             <div className="absolute bottom-20 left-1/2 transform -translate-x-1/2">
               <div className="flex space-x-2">
-                <div className="w-3 h-3 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-                <div className="w-3 h-3 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-                <div className="w-3 h-3 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                <div className="w-3 h-3 bg-accent rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                <div className="w-3 h-3 bg-accent rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                <div className="w-3 h-3 bg-accent rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
               </div>
             </div>
           </main>
@@ -123,21 +141,28 @@ const handleLogin = async (email: string, password: string) => {
       case 'start':
         return <StartPage onStart={handleStart} />;
 
+      case 'business':
+        return <BusinessSetupPage onBusinessSetup={handleBusinessSetup} />;
+
       case 'signup':
-        return <SignUpPage onSignUp={handleSignUp} currentUserRole={currentUser?.type} />;
+        return <SignUpPage onSignUp={handleSignUp} currentUserRole={undefined} />;
 
 case 'login':
         return <LoginPage onLogin={handleLogin} />;
 
-      case 'home':
-        return <HomePage onLogout={handleLogout} onGoToLogin={handleGoToLogin} />;
+case 'home':
+        return <HomePage currentUser={currentUser} onLogout={handleLogout} onGoToLogin={handleGoToLogin} onForceClose={handleForceClose} />;
 
       default:
         return null;
     }
   };
 
-  return renderPage();
+  return (
+    <ThemeProvider>
+      {renderPage()}
+    </ThemeProvider>
+  );
 }
 
 export default App;

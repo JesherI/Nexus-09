@@ -20,5 +20,21 @@
   width: 120px;
   height: 120px;
   object-fit: contain;
+
   filter: drop-shadow(0 0 20px rgba(147, 51, 234, 0.5));
+}
+
+/* Override browser autofill styles */
+input:-webkit-autofill {
+  -webkit-box-shadow: 0 0 0px 1000px rgba(255, 255, 255, 0.1) inset;
+  -webkit-text-fill-color: white;
+}
+
+input:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0px 1000px rgba(255, 255, 255, 0.15) inset;
+  -webkit-text-fill-color: white;
+}
+
+.logo-center.logo-enhanced {
+  filter: var(--logo-filter);
 }
