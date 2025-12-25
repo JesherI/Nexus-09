@@ -7,6 +7,10 @@
 	animation: float 6s ease-in-out infinite, pop .8s ease;
 }
 
+.floating-logo {
+	animation: float 4s ease-in-out infinite, pop .8s ease;
+}
+
 .start-label {
 	animation: pulse 2.2s infinite;
 }

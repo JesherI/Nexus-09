@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 type Props = {
   className?: string;
   languages?: { code: string; label: string; flag?: string }[];
+  dropdownPosition?: 'up' | 'down';
 };
 
 const DEFAULT_LANGS = [
@@ -17,7 +18,11 @@ const DEFAULT_LANGS = [
   { code: 'zh', label: '中文', flag: '🇨🇳' }
 ];
 
-export default function LanguageSelector({ className = '', languages = DEFAULT_LANGS }: Props) {
+export default function LanguageSelector({ 
+  className = '', 
+  languages = DEFAULT_LANGS, 
+  dropdownPosition = 'down' 
+}: Props) {
   const { i18n } = useTranslation();
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState(() => i18n.language || 'en');
@@ -60,8 +65,10 @@ export default function LanguageSelector({ className = '', languages = DEFAULT_L
         </svg>
       </button>
 
-      {open && (
-        <div className="absolute right-0 bottom-full mb-2 w-56 z-50">
+{open && (
+        <div className={`absolute right-0 w-56 z-50 ${
+          dropdownPosition === 'up' ? 'bottom-full mb-2' : 'top-full mt-2'
+        }`}>
           <div className="rounded-xl overflow-hidden bg-white/10 backdrop-blur-md border border-white/20 shadow-lg">
             <div className="max-h-64 overflow-y-auto custom-scrollbar">
               {languages.map((l) => {
