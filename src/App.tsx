@@ -3,6 +3,7 @@ import "./App.css";
 import "./styles/themes.css";
 import StartPage from "./pages/welcome/StartPage";
 import BusinessSetupPage from "./pages/BusinessSetupPage";
+import PosSetupPage from "./pages/PosSetupPage";
 import SignUpPage from "./pages/SignUpPage";
 import LoginPage from "./pages/LoginPage";
 import HomePage from "./pages/home/HomePage";
@@ -11,7 +12,7 @@ import { ThemeProvider } from "./contexts/ThemeContext";
 import { UserType, User } from "./database";
 import { invoke } from "@tauri-apps/api/core";
 
-type Page = 'loading' | 'start' | 'business' | 'signup' | 'login' | 'home';
+type Page = 'loading' | 'start' | 'business' | 'pos' | 'signup' | 'login' | 'home';
 
 function App() {
   const [currentPage, setCurrentPage] = useState<Page>('loading');
@@ -44,6 +45,10 @@ useEffect(() => {
 
   const handleBusinessSetup = (id: number) => {
     setBusinessId(id);
+    setCurrentPage('pos');
+  };
+
+  const handlePosSetup = () => {
     setCurrentPage('signup');
   };
 
@@ -144,8 +149,11 @@ const handleLogout = async () => {
       case 'business':
         return <BusinessSetupPage onBusinessSetup={handleBusinessSetup} onBack={() => setCurrentPage('start')} />;
 
+      case 'pos':
+        return <PosSetupPage businessId={businessId!} onPosSetup={handlePosSetup} onBack={() => setCurrentPage('business')} />;
+
       case 'signup':
-        return <SignUpPage onSignUp={handleSignUp} onBack={() => setCurrentPage('business')} currentUserRole={undefined} />;
+        return <SignUpPage onSignUp={handleSignUp} onBack={() => setCurrentPage('pos')} currentUserRole={undefined} />;
 
 case 'login':
         return <LoginPage onLogin={handleLogin} onForceClose={handleForceClose} />;

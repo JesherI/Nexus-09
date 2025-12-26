@@ -136,5 +136,17 @@
   },
   "businessSetup": {
     "title": "配置企业"
+  },
+  "posSetup": {
+    "title": "POS设置",
+    "zonaHoraria": "时区",
+    "seleccioneZonaHoraria": "选择您的时区",
+    "formatoFecha": "日期格式",
+    "seleccioneFormatoFecha": "选择日期格式",
+    "tipoMoneda": "货币类型",
+    "seleccioneTipoMoneda": "选择货币类型",
+    "guardando": "保存中...",
+    "continuar": "继续",
+    "configuracionGuardada": "配置保存成功"
   }
 }

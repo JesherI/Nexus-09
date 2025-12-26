@@ -112,5 +112,17 @@
     "passwordCaracteres": "Password must have at least 6 characters",
     "confirmClearData": "Are you sure you want to clear all data? This will delete all users and sessions.",
     "clearAllData": "🗑️ Clear All Data (Testing)"
+  },
+  "posSetup": {
+    "title": "Point of Sale Setup",
+    "zonaHoraria": "Time Zone",
+    "seleccioneZonaHoraria": "Select your time zone",
+    "formatoFecha": "Date Format",
+    "seleccioneFormatoFecha": "Select the date format",
+    "tipoMoneda": "Currency Type",
+    "seleccioneTipoMoneda": "Select the currency type",
+    "guardando": "Saving...",
+    "continuar": "Continue",
+    "configuracionGuardada": "Configuration saved successfully"
   }
 }

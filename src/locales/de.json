@@ -136,5 +136,17 @@
   },
   "businessSetup": {
     "title": "Geschäft konfigurieren"
+  },
+  "posSetup": {
+    "title": "Point of Sale Setup",
+    "zonaHoraria": "Zeitzone",
+    "seleccioneZonaHoraria": "Wählen Sie Ihre Zeitzone",
+    "formatoFecha": "Datumsformat",
+    "seleccioneFormatoFecha": "Wählen Sie das Datumsformat",
+    "tipoMoneda": "Währungstyp",
+    "seleccioneTipoMoneda": "Wählen Sie den Währungstyp",
+    "guardando": "Speichern...",
+    "continuar": "Fortfahren",
+    "configuracionGuardada": "Konfiguration erfolgreich gespeichert"
   }
 }

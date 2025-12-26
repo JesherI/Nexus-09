@@ -136,5 +136,17 @@
   },
   "businessSetup": {
     "title": "Configurar Negocio"
+  },
+  "posSetup": {
+    "title": "Configurar Punto de Venta",
+    "zonaHoraria": "Zona Horaria",
+    "seleccioneZonaHoraria": "Seleccione su zona horaria",
+    "formatoFecha": "Formato de Fecha",
+    "seleccioneFormatoFecha": "Seleccione el formato de fecha",
+    "tipoMoneda": "Tipo de Moneda",
+    "seleccioneTipoMoneda": "Seleccione el tipo de moneda",
+    "guardando": "Guardando...",
+    "continuar": "Continuar",
+    "configuracionGuardada": "Configuración guardada exitosamente"
   }
 }

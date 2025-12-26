@@ -136,5 +136,17 @@
   },
   "businessSetup": {
     "title": "ビジネスを設定"
+  },
+  "posSetup": {
+    "title": "POS設定",
+    "zonaHoraria": "タイムゾーン",
+    "seleccioneZonaHoraria": "タイムゾーンを選択",
+    "formatoFecha": "日付形式",
+    "seleccioneFormatoFecha": "日付形式を選択",
+    "tipoMoneda": "通貨タイプ",
+    "seleccioneTipoMoneda": "通貨タイプを選択",
+    "guardando": "保存中...",
+    "continuar": "続ける",
+    "configuracionGuardada": "設定が正常に保存されました"
   }
 }

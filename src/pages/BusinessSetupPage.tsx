@@ -21,6 +21,8 @@ function BusinessSetupPage({ onBusinessSetup, onBack }: BusinessSetupPageProps) 
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
+  const isFormValid = formData.name.trim() && formData.location.trim() && formData.phone.trim();
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
@@ -199,11 +201,11 @@ function BusinessSetupPage({ onBusinessSetup, onBack }: BusinessSetupPageProps) 
             </div>
 
             <div className="md:col-span-2 flex justify-center">
-              <button
-                type="submit"
-                disabled={loading}
-                 className="bg-gradient-to-r from-[var(--accent)] to-[var(--accent-light)] hover:from-[var(--accent-light)] hover:to-[var(--accent-hover)] disabled:opacity-50 disabled:cursor-not-allowed text-primary font-medium py-3 px-8 rounded-lg transition-all duration-200 flex items-center justify-center gap-2"
-              >
+               <button
+                 type="submit"
+                 disabled={loading || !isFormValid}
+                  className="bg-gradient-to-r from-[var(--accent)] to-[var(--accent-light)] hover:from-[var(--accent-light)] hover:to-[var(--accent-hover)] disabled:opacity-50 disabled:cursor-not-allowed text-primary font-medium py-3 px-8 rounded-lg transition-all duration-200 flex items-center justify-center gap-2"
+               >
                 {loading ? (
                   <>
                     <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>

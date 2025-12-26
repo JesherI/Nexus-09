@@ -36,18 +36,29 @@ export interface Session {
   expiresAt: Date;
 }
 
+export interface PosSettings {
+  id?: number;
+  businessId: number;
+  timezone: string;
+  dateFormat: string;
+  currency: string;
+  createdAt: Date;
+}
+
 class AppDatabase extends Dexie {
   users!: Table<User>;
   businesses!: Table<Business>;
   sessions!: Table<Session>;
+  posSettings!: Table<PosSettings>;
 
   constructor() {
     super('NexusAppDB');
 
-this.version(1).stores({
+    this.version(2).stores({
       users: '++id, email, phone, type, createdAt, lastLogin',
       businesses: '++id, name, location, phone, createdAt',
-      sessions: '++id, userId, token, createdAt, expiresAt'
+      sessions: '++id, userId, token, createdAt, expiresAt',
+      posSettings: '++id, businessId, timezone, dateFormat, currency, createdAt'
     });
   }
 }
