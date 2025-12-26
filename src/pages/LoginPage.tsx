@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { AuthService } from '../services/auth';
 import { User, db } from '../database';
 import NeuralParticles from '../components/NeuralParticles';
+import { useTranslation } from 'react-i18next';
 
 interface LoginPageProps {
   onLogin: (email: string, password: string) => Promise<void>;
@@ -9,6 +10,7 @@ interface LoginPageProps {
 }
 
 function LoginPage({ onLogin, onForceClose }: LoginPageProps) {
+  const t = useTranslation().t;
   const [users, setUsers] = useState<User[]>([]);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [password, setPassword] = useState('');
@@ -35,7 +37,7 @@ function LoginPage({ onLogin, onForceClose }: LoginPageProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedUser) {
-      setError('Please select a user');
+      setError(t('login.selectUserError'));
       return;
     }
 
@@ -45,7 +47,7 @@ function LoginPage({ onLogin, onForceClose }: LoginPageProps) {
     try {
       await onLogin(selectedUser.email, password);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Login failed');
+      setError(err instanceof Error ? err.message : t('login.loginFailed'));
     } finally {
       setLoading(false);
     }
@@ -60,7 +62,7 @@ const handleUserSelect = (user: User) => {
 
   const handleClearData = async () => {
     try {
-      if (window.confirm('Are you sure you want to clear all data? This will delete all users and sessions.')) {
+      if (window.confirm(t('login.confirmClearData'))) {
         await db.delete();
         window.location.reload();
       }
@@ -87,7 +89,7 @@ const handleUserSelect = (user: User) => {
         <div className="relative">
          <div className="w-32 h-32 md:w-40 md:h-40 rounded-full login-profile-container flex items-center justify-center overflow-hidden shadow-2xl mb-4 mx-auto hover:scale-[1.02] transition-all duration-300">
            {selectedUser?.profileImage ? (
-             <img src={selectedUser.profileImage} alt="Profile" className="w-full h-full object-cover" />
+             <img src={selectedUser.profileImage} alt={t('login.profile')} className="w-full h-full object-cover" />
            ) : (
              <svg className="w-20 h-20 md:w-24 md:h-24 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
@@ -110,7 +112,7 @@ const handleUserSelect = (user: User) => {
       {showUserList && (
          <div className="fixed bottom-20 left-8 w-80 glass-card rounded-2xl shadow-2xl z-50">
           <div className="p-4 border-b border-white/10">
-            <p className="text-sm font-medium text-purple-200">Select User</p>
+            <p className="text-sm font-medium text-purple-200">{t('login.selectUser')}</p>
           </div>
           <div className="max-h-64 overflow-y-auto custom-scrollbar">
             {users.map((user) => (
@@ -123,7 +125,7 @@ const handleUserSelect = (user: User) => {
               >
                    <div className="w-12 h-12 rounded-full bg-[var(--accent)]/20 border-2 border-[var(--accent)]/30 flex items-center justify-center overflow-hidden flex-shrink-0">
                   {user.profileImage ? (
-                    <img src={user.profileImage} alt="Profile" className="w-full h-full object-cover" />
+                    <img src={user.profileImage} alt={t('login.profile')} className="w-full h-full object-cover" />
                   ) : (
                     <svg className="w-6 h-6 text-purple-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
@@ -132,7 +134,7 @@ const handleUserSelect = (user: User) => {
                 </div>
                 <div className="flex-1 text-left">
                   <p className="font-medium">{user.nombre} {user.apellidoPaterno}</p>
-                  <p className="text-xs text-gray-400">Member since {new Date(user.createdAt).toLocaleDateString()}</p>
+                  <p className="text-xs text-gray-400">{t('login.memberSinceDate', { date: new Date(user.createdAt).toLocaleDateString() })}</p>
                 </div>
               </button>
             ))}
@@ -151,7 +153,7 @@ const handleUserSelect = (user: User) => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="w-full px-6 py-4 rounded-lg text-base login-input transition-all"
-                placeholder="Password"
+                placeholder={t('login.passwordPlaceholder')}
                 required
               />
             </div>
@@ -173,36 +175,20 @@ const handleUserSelect = (user: User) => {
             {loading ? (
               <div className="flex items-center justify-center gap-3">
                 <div className="w-4 h-4 border-2 border-gray-400 border-t-white rounded-full animate-spin"></div>
-                <span>Signing In...</span>
+                <span>{t('login.signingIn')}</span>
               </div>
-            ) : (
-              'Sign In'
-            )}
+            ) : t('login.signIn')}
           </button>
-</form>
+        </form>
       </div>
 
-
-
-       {/* User Selector - Fixed Bottom Left */}
-       {users.length > 1 && (
-         <div className="fixed bottom-8 left-8 z-50 flex items-center gap-4">
-           <button
-             onClick={() => setShowUserList(!showUserList)}
-             className="px-4 py-2 glass rounded-lg hover:bg-secondary transition-all text-sm text-secondary shadow-lg"
-           >
-             {users.length} users available
-           </button>
-         </div>
-       )}
-
-       {/* Clear Data Button - Below Sign In Form */}
+        {/* Clear Data Button - Below Sign In Form */}
        <div className="mt-8 text-center" style={{ zIndex: 2 }}>
          <button
            onClick={handleClearData}
            className="text-red-400 hover:text-red-300 text-sm transition-colors underline"
          >
-           🗑️ Clear All Data (Testing)
+            {t('login.clearAllData')}
          </button>
        </div>
 
@@ -211,7 +197,7 @@ const handleUserSelect = (user: User) => {
          <button
            onClick={onForceClose}
            className="p-3 glass rounded-full hover:scale-110 transition-all duration-300 shadow-lg"
-           aria-label="Shutdown app"
+            aria-label={t('login.shutdownApp')}
          >
            <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.36 6.64a9 9 0 11-12.73 0M12 2v10" />

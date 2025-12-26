@@ -3,6 +3,7 @@ import { UserType } from '../database';
 import { AuthService } from '../services/auth';
 import { db } from '../database';
 import NeuralParticles from '../components/NeuralParticles';
+import { useTranslation } from 'react-i18next';
 
 interface SignUpPageProps {
   onSignUp: (userData: {
@@ -21,6 +22,7 @@ interface SignUpPageProps {
 }
 
 function SignUpPage({ onSignUp, onBack, currentUserRole }: SignUpPageProps) {
+  const t = useTranslation().t;
   const [formData, setFormData] = useState({
     nombre: '',
     apellidoPaterno: '',
@@ -69,26 +71,26 @@ try {
       // Validar que todos los campos estén llenos
       if (!formData.nombre || !formData.apellidoPaterno || !formData.apellidoMaterno || 
           !formData.phone || !formData.email || !formData.password) {
-        throw new Error('Todos los campos son obligatorios');
+        throw new Error(t('signup.camposObligatorios'));
       }
 
       // Validar email
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(formData.email)) {
-        throw new Error('Ingrese un email válido');
+        throw new Error(t('signup.emailValido'));
       }
 
       // Validar teléfono (mínimo 10 dígitos)
       if (formData.phone.length < 10) {
-        throw new Error('El teléfono debe tener al menos 10 dígitos');
+        throw new Error(t('signup.telefonoDigitos'));
       }
 
       if (formData.password !== formData.confirmPassword) {
-        throw new Error('Las contraseñas no coinciden');
+        throw new Error(t('signup.passwordsNoCoinciden'));
       }
 
       if (formData.password.length < 6) {
-        throw new Error('La contraseña debe tener al menos 6 caracteres');
+        throw new Error(t('signup.passwordCaracteres'));
       }
 
       await onSignUp({
@@ -103,7 +105,7 @@ try {
         currentUserRole
       });
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Registration failed');
+      setError(err instanceof Error ? err.message : t('signup.registrationFailed'));
     } finally {
       setLoading(false);
     }
@@ -122,7 +124,7 @@ const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 
   const handleClearData = async () => {
     try {
-      if (window.confirm('Are you sure you want to clear all data? This will delete all users and sessions.')) {
+      if (window.confirm(t('signup.confirmClearData'))) {
         await db.delete();
         window.location.reload();
       }
@@ -137,7 +139,7 @@ const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       <button
         onClick={onBack}
         className="absolute top-8 left-8 z-50 p-2 glass rounded-full hover:scale-110 transition-all duration-300 shadow-lg"
-        aria-label="Go back"
+        aria-label={t('signup.goBack')}
       >
         <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -156,9 +158,9 @@ const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       <div className="w-full max-w-2xl" style={{ zIndex: 2 }}>
         {/* Logo and Title */}
         <div className="flex flex-col items-center mb-8">
-          <img src="/icon.png" alt="logo" className="w-20 h-20 mb-4" />
+          <img src="/icon.png" alt={t('signup.logo')} className="w-20 h-20 mb-4" />
           <h2 className="text-3xl font-bold bg-gradient-to-r from-purple-300 to-purple-100 bg-clip-text text-transparent text-center">
-            Create Account
+            {t('signup.createAccount')}
           </h2>
         </div>
 
@@ -169,7 +171,7 @@ const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
             <div className="relative">
               <div className="w-24 h-24 rounded-full bg-purple-600/20 border-2 border-purple-400/30 flex items-center justify-center overflow-hidden">
                 {profileImage ? (
-                  <img src={profileImage} alt="Profile" className="w-full h-full object-cover" />
+                  <img src={profileImage} alt={t('signup.profile')} className="w-full h-full object-cover" />
                 ) : (
                   <svg className="w-12 h-12 text-purple-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
@@ -195,39 +197,39 @@ const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
           <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Nombre */}
             <div>
-              <label className="block text-sm font-medium mb-2 text-secondary">Nombre</label>
+              <label className="block text-sm font-medium mb-2 text-secondary">{t('signup.nombre')}</label>
               <input
                 type="text"
                 value={formData.nombre}
                 onChange={(e) => setFormData({...formData, nombre: e.target.value})}
                 className="w-full px-4 py-3 input-theme rounded-lg focus:outline-none transition-all"
-                placeholder="Ingrese su nombre"
+                placeholder={t('signup.ingreseNombre')}
                 required
               />
             </div>
 
             {/* Apellido Paterno */}
             <div>
-              <label className="block text-sm font-medium mb-2 text-secondary">Apellido Paterno</label>
+              <label className="block text-sm font-medium mb-2 text-secondary">{t('signup.apellidoPaterno')}</label>
               <input
                 type="text"
                 value={formData.apellidoPaterno}
                 onChange={(e) => setFormData({...formData, apellidoPaterno: e.target.value})}
                 className="w-full px-4 py-3 input-theme rounded-lg focus:outline-none transition-all"
-                placeholder="Ingrese su apellido paterno"
+                placeholder={t('signup.ingreseApellidoPaterno')}
                 required
               />
             </div>
 
             {/* Apellido Materno */}
             <div>
-              <label className="block text-sm font-medium mb-2 text-secondary">Apellido Materno</label>
+              <label className="block text-sm font-medium mb-2 text-secondary">{t('signup.apellidoMaterno')}</label>
               <input
                 type="text"
                 value={formData.apellidoMaterno}
                 onChange={(e) => setFormData({...formData, apellidoMaterno: e.target.value})}
                 className="w-full px-4 py-3 input-theme rounded-lg focus:outline-none transition-all"
-                placeholder="Ingrese su apellido materno"
+                placeholder={t('signup.ingreseApellidoMaterno')}
                 required
               />
             </div>
@@ -236,13 +238,13 @@ const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
             {/* Phone */}
             <div>
 
-              <label className="block text-sm font-medium mb-2 text-secondary">Teléfono</label>
+              <label className="block text-sm font-medium mb-2 text-secondary">{t('signup.telefono')}</label>
               <input
                 type="tel"
                 value={formData.phone}
                 onChange={(e) => setFormData({...formData, phone: e.target.value})}
                 className="w-full px-4 py-3 input-theme rounded-lg focus:outline-none transition-all"
-                placeholder="Ingrese su teléfono"
+                placeholder={t('signup.ingreseTelefono')}
 
                 required
               />
@@ -250,13 +252,13 @@ const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 
             {/* Email */}
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium mb-2 text-secondary">Email</label>
+              <label className="block text-sm font-medium mb-2 text-secondary">{t('signup.email')}</label>
               <input
                 type="email"
                 value={formData.email}
                 onChange={(e) => setFormData({...formData, email: e.target.value})}
                 className="w-full px-4 py-3 input-theme rounded-lg focus:outline-none transition-all"
-                placeholder="Ingrese su email"
+                placeholder={t('signup.ingreseEmail')}
                 required
               />
             </div>
@@ -265,7 +267,7 @@ const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
             {showTypeSelector && currentUserRole && (
               <div className="md:col-span-2">
                 <label className="block text-sm font-medium mb-2 text-secondary">
-                  User Type {currentUserRole === 'owner' ? '(Admin)' : '(Cashier)'}
+                  {t('signup.userType', { role: currentUserRole === 'owner' ? '(Admin)' : '(Cashier)' })}
                 </label>
                 <select
                   value={formData.type}
@@ -275,15 +277,15 @@ const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
                   disabled
                 >
                   {currentUserRole === 'owner' ? (
-                    <option value="admin" className="bg-neutral-800">Admin</option>
+                    <option value="admin" className="bg-neutral-800">{t('signup.admin')}</option>
                   ) : (
-                    <option value="cashier" className="bg-neutral-800">Cashier</option>
+                    <option value="cashier" className="bg-neutral-800">{t('signup.cashier')}</option>
                   )}
                 </select>
                 <p className="text-xs text-gray-400 mt-1">
                   {currentUserRole === 'owner'
-                    ? 'As Owner, you can only register Admin users'
-                    : 'As Admin, you can only register Cashier users'
+                    ? t('signup.ownerAdminOnly')
+                    : t('signup.adminCashierOnly')
                   }
                 </p>
               </div>
@@ -296,20 +298,20 @@ const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
-                  <span>First user will be automatically set as Owner</span>
+                  <span>{t('signup.firstUserOwner')}</span>
                 </div>
               </div>
             )}
 
             {/* Password */}
             <div>
-              <label className="block text-sm font-medium mb-2 text-secondary">Password</label>
+              <label className="block text-sm font-medium mb-2 text-secondary">{t('signup.password')}</label>
               <input
                 type="password"
                 value={formData.password}
                 onChange={(e) => setFormData({...formData, password: e.target.value})}
                 className="w-full px-4 py-3 input-theme rounded-lg focus:outline-none transition-all"
-                placeholder="Enter password"
+                placeholder={t('signup.enterPassword')}
                 required
               />
             </div>
@@ -317,13 +319,13 @@ const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 
             {/* Confirm Password */}
             <div>
-              <label className="block text-sm font-medium mb-2 text-secondary">Confirm Password</label>
+              <label className="block text-sm font-medium mb-2 text-secondary">{t('signup.confirmPassword')}</label>
               <input
                 type="password"
                 value={formData.confirmPassword}
                 onChange={(e) => setFormData({...formData, confirmPassword: e.target.value})}
                 className="w-full px-4 py-3 input-theme rounded-lg focus:outline-none transition-all"
-                placeholder="Confirm password"
+                placeholder={t('signup.confirmPassword')}
                 required
               />
             </div>
@@ -345,11 +347,9 @@ const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
                 {loading ? (
                   <>
                     <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                    Creating Account...
+                    {t('signup.creatingAccount')}
                   </>
-                ) : (
-                  'Sign Up'
-                )}
+                ) : t('signup.signUp')}
               </button>
             </div>
           </form>
@@ -362,7 +362,7 @@ const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
            onClick={handleClearData}
            className="px-4 py-2 bg-black/80 backdrop-blur-sm border border-white/20 rounded-lg hover:bg-black/90 transition-all text-sm text-red-400 shadow-lg"
          >
-           🗑️ Clear All Data (Testing)
+            {t('signup.clearAllData')}
          </button>
        </div>
     </main>
