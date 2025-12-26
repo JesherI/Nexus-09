@@ -130,9 +130,9 @@ const handleLogout = async () => {
             {/* Loading indicator */}
             <div className="absolute bottom-20 left-1/2 transform -translate-x-1/2">
               <div className="flex space-x-2">
-                <div className="w-3 h-3 bg-accent rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-                <div className="w-3 h-3 bg-accent rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-                <div className="w-3 h-3 bg-accent rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                <div className="w-3 h-3 accent-bg rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                <div className="w-3 h-3 accent-bg rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                <div className="w-3 h-3 accent-bg rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
               </div>
             </div>
           </main>
@@ -142,16 +142,16 @@ const handleLogout = async () => {
         return <StartPage onStart={handleStart} />;
 
       case 'business':
-        return <BusinessSetupPage onBusinessSetup={handleBusinessSetup} />;
+        return <BusinessSetupPage onBusinessSetup={handleBusinessSetup} onBack={() => setCurrentPage('start')} />;
 
       case 'signup':
-        return <SignUpPage onSignUp={handleSignUp} currentUserRole={undefined} />;
+        return <SignUpPage onSignUp={handleSignUp} onBack={() => setCurrentPage('business')} currentUserRole={undefined} />;
 
 case 'login':
-        return <LoginPage onLogin={handleLogin} />;
+        return <LoginPage onLogin={handleLogin} onForceClose={handleForceClose} />;
 
 case 'home':
-        return <HomePage currentUser={currentUser} onLogout={handleLogout} onGoToLogin={handleGoToLogin} onForceClose={handleForceClose} />;
+        return <HomePage currentUser={currentUser} onLogout={handleLogout} onGoToLogin={handleGoToLogin} />;
 
       default:
         return null;

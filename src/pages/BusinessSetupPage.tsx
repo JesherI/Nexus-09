@@ -1,15 +1,14 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import LanguageSelector from "../components/LanguageSelector";
 import NeuralParticles from "../components/NeuralParticles";
-import ThemeToggle from "../components/ThemeToggle";
 import { db, Business } from "../database";
 
 interface BusinessSetupPageProps {
   onBusinessSetup: (businessId: number) => void;
+  onBack: () => void;
 }
 
-function BusinessSetupPage({ onBusinessSetup }: BusinessSetupPageProps) {
+function BusinessSetupPage({ onBusinessSetup, onBack }: BusinessSetupPageProps) {
   const { t } = useTranslation();
   const [formData, setFormData] = useState({
     name: '',
@@ -75,6 +74,16 @@ function BusinessSetupPage({ onBusinessSetup }: BusinessSetupPageProps) {
 
   return (
     <main className="min-h-screen bg-primary text-primary flex flex-col items-center justify-center p-4 font-sans relative">
+      {/* Back Button - Top Left */}
+      <button
+        onClick={onBack}
+        className="absolute top-8 left-8 z-50 p-2 glass rounded-full hover:scale-110 transition-all duration-300 shadow-lg"
+        aria-label="Go back"
+      >
+        <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+        </svg>
+      </button>
       {/* Neural Particles Background */}
       <NeuralParticles />
 
@@ -84,11 +93,7 @@ function BusinessSetupPage({ onBusinessSetup }: BusinessSetupPageProps) {
          <div className="absolute bottom-20 left-20 h-[300px] w-[300px] rounded-full decoration-tertiary opacity-40 decoration-blur-secondary"></div>
        </div>
 
-       {/* Language Selector - Bottom Right */}
-       <div className="absolute bottom-8 right-8 flex items-center gap-4" style={{ zIndex: 2 }}>
-         <ThemeToggle variant="switch" />
-         <LanguageSelector dropdownPosition="up" />
-       </div>
+
 
       {/* Center Content */}
       <div className="w-full max-w-2xl" style={{ zIndex: 2 }}>

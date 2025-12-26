@@ -2,13 +2,13 @@ import { useState, useEffect } from 'react';
 import { AuthService } from '../services/auth';
 import { User, db } from '../database';
 import NeuralParticles from '../components/NeuralParticles';
-import ThemeToggle from '../components/ThemeToggle';
 
 interface LoginPageProps {
   onLogin: (email: string, password: string) => Promise<void>;
+  onForceClose: () => Promise<void>;
 }
 
-function LoginPage({ onLogin }: LoginPageProps) {
+function LoginPage({ onLogin, onForceClose }: LoginPageProps) {
   const [users, setUsers] = useState<User[]>([]);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [password, setPassword] = useState('');
@@ -182,10 +182,7 @@ const handleUserSelect = (user: User) => {
 </form>
       </div>
 
-       {/* Theme Toggle - Bottom Right */}
-       <div className="absolute bottom-8 right-8 z-50">
-         <ThemeToggle variant="switch" />
-       </div>
+
 
        {/* User Selector - Fixed Bottom Left */}
        {users.length > 1 && (
@@ -199,16 +196,28 @@ const handleUserSelect = (user: User) => {
          </div>
        )}
 
-      {/* Clear Data Button - Below Sign In Form */}
+       {/* Clear Data Button - Below Sign In Form */}
+       <div className="mt-8 text-center" style={{ zIndex: 2 }}>
+         <button
+           onClick={handleClearData}
+           className="text-red-400 hover:text-red-300 text-sm transition-colors underline"
+         >
+           🗑️ Clear All Data (Testing)
+         </button>
+       </div>
 
-      <div className="mt-8 text-center" style={{ zIndex: 2 }}>
-        <button
-          onClick={handleClearData}
-          className="text-red-400 hover:text-red-300 text-sm transition-colors underline"
-        >
-          🗑️ Clear All Data (Testing)
-        </button>
-      </div>
+       {/* Power Off Button - Bottom Right */}
+       <div className="absolute bottom-8 right-8 z-50">
+         <button
+           onClick={onForceClose}
+           className="p-3 glass rounded-full hover:scale-110 transition-all duration-300 shadow-lg"
+           aria-label="Shutdown app"
+         >
+           <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.36 6.64a9 9 0 11-12.73 0M12 2v10" />
+           </svg>
+         </button>
+       </div>
     </main>
   );
 }

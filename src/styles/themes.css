@@ -1,25 +1,25 @@
 /* Light Theme - Purple, Black, White palette */
 :root[data-theme="light"] {
-  --bg-primary: #ffffff;
-  --bg-secondary: #f8f9fa;
-  --bg-tertiary: #f1f3f4;
-  --text-primary: #1a1a1a;
-  --text-secondary: #4a4a4a;
-  --text-tertiary: #6a6a6a;
-  --border-color: #e0e0e0;
-  --shadow: rgba(90, 5, 169, 0.1);
-  --accent: #5a05a9;
-  --accent-hover: #4a0490;
-  --accent-light: #8b5cf6;
-  --gradient-start: #ffffff;
-  --gradient-mid: #f8f9fa;
-  --gradient-end: #f1f3f4;
-  --decoration-primary: #5a05a9;
-  --decoration-secondary: rgba(139, 92, 246, 0.08);
-  --decoration-tertiary: rgba(90, 5, 169, 0.05);
-  --glass-bg: rgba(255, 255, 255, 0.9);
-  --glass-border: rgba(90, 5, 169, 0.2);
-  --logo-filter: drop-shadow(0 0 20px rgba(90, 5, 169, 0.8));
+  --bg-primary: #e9d5ff;
+  --bg-secondary: #d8b4fe;
+  --bg-tertiary: #c084fc;
+  --text-primary: #581c87;
+  --text-secondary: #7c3aed;
+  --text-tertiary: #a855f7;
+  --border-color: #a855f7;
+  --shadow: rgba(139, 92, 246, 0.15);
+  --accent: #8b5cf6;
+  --accent-hover: #7c3aed;
+  --accent-light: #a855f7;
+  --gradient-start: #e9d5ff;
+  --gradient-mid: #d8b4fe;
+  --gradient-end: #c084fc;
+  --decoration-primary: #8b5cf6;
+  --decoration-secondary: rgba(139, 92, 246, 0.1);
+  --decoration-tertiary: rgba(139, 92, 246, 0.08);
+  --glass-bg: rgba(233, 213, 255, 0.95);
+  --glass-border: rgba(139, 92, 246, 0.3);
+  --logo-filter: drop-shadow(0 0 20px rgba(139, 92, 246, 0.8));
 }
 
 /* Dark Theme - Purple, Black, White palette */
@@ -161,7 +161,7 @@
 
 /* Forzar colores en ambos temas */
 :root[data-theme="light"] .login-input {
-  color: #1a1a1a !important;
+  color: #581c87 !important;
 }
 
 :root[data-theme="dark"] .login-input {
@@ -179,7 +179,7 @@
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  filter: drop-shadow(0 0 10px rgba(90, 5, 169, 0.3));
+  filter: drop-shadow(0 0 10px rgba(139, 92, 246, 0.3));
 }
 
 /* Profile container for login page */

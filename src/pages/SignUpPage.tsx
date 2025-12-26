@@ -3,7 +3,6 @@ import { UserType } from '../database';
 import { AuthService } from '../services/auth';
 import { db } from '../database';
 import NeuralParticles from '../components/NeuralParticles';
-import ThemeToggle from '../components/ThemeToggle';
 
 interface SignUpPageProps {
   onSignUp: (userData: {
@@ -17,10 +16,11 @@ interface SignUpPageProps {
     type?: UserType;
     currentUserRole?: UserType;
   }) => Promise<void>;
+  onBack: () => void;
   currentUserRole?: UserType;
 }
 
-function SignUpPage({ onSignUp, currentUserRole }: SignUpPageProps) {
+function SignUpPage({ onSignUp, onBack, currentUserRole }: SignUpPageProps) {
   const [formData, setFormData] = useState({
     nombre: '',
     apellidoPaterno: '',
@@ -132,8 +132,17 @@ const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
   };
 
   return (
-
     <main className="min-h-screen bg-primary text-primary flex flex-col items-center justify-center p-8 font-sans relative">
+      {/* Back Button - Top Left */}
+      <button
+        onClick={onBack}
+        className="absolute top-8 left-8 z-50 p-2 glass rounded-full hover:scale-110 transition-all duration-300 shadow-lg"
+        aria-label="Go back"
+      >
+        <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+        </svg>
+      </button>
       {/* Neural Particles Background */}
       <NeuralParticles />
 
@@ -347,16 +356,15 @@ const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         </div>
       </div>
 
-      {/* Clear Data Button - Fixed Bottom Left */}
-      <div className="fixed bottom-8 left-8 z-50 flex items-center gap-4">
-        <ThemeToggle variant="switch" />
-        <button
-          onClick={handleClearData}
-          className="px-4 py-2 bg-black/80 backdrop-blur-sm border border-white/20 rounded-lg hover:bg-black/90 transition-all text-sm text-red-400 shadow-lg"
-        >
-          🗑️ Clear All Data (Testing)
-        </button>
-      </div>
+       {/* Clear Data Button - Fixed Bottom Left */}
+       <div className="fixed bottom-8 left-8 z-50">
+         <button
+           onClick={handleClearData}
+           className="px-4 py-2 bg-black/80 backdrop-blur-sm border border-white/20 rounded-lg hover:bg-black/90 transition-all text-sm text-red-400 shadow-lg"
+         >
+           🗑️ Clear All Data (Testing)
+         </button>
+       </div>
     </main>
   );
 }
