@@ -78,7 +78,7 @@ function BusinessSetupPage({ onBusinessSetup, onBack }: BusinessSetupPageProps) 
       <button
         onClick={onBack}
         className="absolute top-8 left-8 z-50 p-2 glass rounded-full hover:scale-110 transition-all duration-300 shadow-lg"
-        aria-label="Go back"
+        aria-label={t('business.goBack')}
       >
         <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -99,9 +99,9 @@ function BusinessSetupPage({ onBusinessSetup, onBack }: BusinessSetupPageProps) 
       <div className="w-full max-w-2xl" style={{ zIndex: 2 }}>
         {/* Logo and Title */}
         <div className="flex flex-col items-center mb-12">
-          <img src="/icon.png" alt="logo" className="w-20 h-20 mb-4" />
+          <img src="/icon.png" alt={t('business.logo')} className="w-20 h-20 mb-4" />
           <h1 className="text-3xl font-extrabold bg-gradient-to-r from-purple-300 to-purple-100 bg-clip-text text-transparent text-center">
-            {t('businessSetup.title', 'Configurar Negocio')}
+            {t('businessSetup.title')}
           </h1>
         </div>
 
@@ -112,7 +112,7 @@ function BusinessSetupPage({ onBusinessSetup, onBack }: BusinessSetupPageProps) 
             <div className="relative">
               <div className="w-24 h-24 rounded-full bg-purple-600/20 border-2 border-purple-400/30 flex items-center justify-center overflow-hidden">
                 {logoPreview ? (
-                  <img src={logoPreview} alt="Logo" className="w-full h-full object-cover" />
+                  <img src={logoPreview} alt={t('business.logoLabel')} className="w-full h-full object-cover" />
                 ) : (
                   <svg className="w-12 h-12 text-purple-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
@@ -136,7 +136,7 @@ function BusinessSetupPage({ onBusinessSetup, onBack }: BusinessSetupPageProps) 
 
           <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium mb-2 text-secondary">Nombre del Negocio</label>
+              <label className="block text-sm font-medium mb-2 text-secondary">{t('business.nombreNegocio')}</label>
               <input
                 type="text"
                 name="name"
@@ -144,12 +144,12 @@ function BusinessSetupPage({ onBusinessSetup, onBack }: BusinessSetupPageProps) 
                 onChange={handleInputChange}
                 required
                  className="w-full px-4 py-3 input-theme rounded-lg focus:outline-none transition-all"
-                placeholder="Ingrese el nombre del negocio"
+                placeholder={t('business.ingreseNombreNegocio')}
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-2 text-secondary">Ubicación</label>
+              <label className="block text-sm font-medium mb-2 text-secondary">{t('business.ubicacion')}</label>
               <input
                 type="text"
                 name="location"
@@ -157,36 +157,36 @@ function BusinessSetupPage({ onBusinessSetup, onBack }: BusinessSetupPageProps) 
                 onChange={handleInputChange}
                 required
                  className="w-full px-4 py-3 input-theme rounded-lg focus:outline-none transition-all"
-                placeholder="Ingrese la ubicación"
+                placeholder={t('business.ingreseUbicacion')}
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-2 text-secondary">Página Web (Opcional)</label>
+              <label className="block text-sm font-medium mb-2 text-secondary">{t('business.paginaWeb')}</label>
               <input
                 type="url"
                 name="website"
                 value={formData.website}
                 onChange={handleInputChange}
                  className="w-full px-4 py-3 input-theme rounded-lg focus:outline-none transition-all"
-                placeholder="https://www.ejemplo.com"
+                placeholder={t('business.paginaWebPlaceholder')}
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-2 text-secondary">Correo Electrónico (Opcional)</label>
+              <label className="block text-sm font-medium mb-2 text-secondary">{t('business.correoElectronico')}</label>
               <input
                 type="email"
                 name="email"
                 value={formData.email}
                 onChange={handleInputChange}
                  className="w-full px-4 py-3 input-theme rounded-lg focus:outline-none transition-all"
-                placeholder="correo@ejemplo.com"
+                placeholder={t('business.correoPlaceholder')}
               />
             </div>
 
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium mb-2 text-secondary">Número de Teléfono</label>
+              <label className="block text-sm font-medium mb-2 text-secondary">{t('business.numeroTelefono')}</label>
               <input
                 type="tel"
                 name="phone"
@@ -194,7 +194,7 @@ function BusinessSetupPage({ onBusinessSetup, onBack }: BusinessSetupPageProps) 
                 onChange={handleInputChange}
                 required
                  className="w-full px-4 py-3 input-theme rounded-lg focus:outline-none transition-all"
-                placeholder="Ingrese el número de teléfono"
+                placeholder={t('business.ingreseNumeroTelefono')}
               />
             </div>
 
@@ -207,11 +207,9 @@ function BusinessSetupPage({ onBusinessSetup, onBack }: BusinessSetupPageProps) 
                 {loading ? (
                   <>
                     <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                    Guardando...
+                    {t('business.guardando')}
                   </>
-                ) : (
-                  'Continuar'
-                )}
+                ) : t('business.continuar')}
               </button>
             </div>
           </form>

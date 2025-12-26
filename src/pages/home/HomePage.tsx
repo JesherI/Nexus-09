@@ -3,6 +3,7 @@ import LanguageSelector from '../../components/LanguageSelector';
 import ThemeToggle from '../../components/ThemeToggle';
 import { AuthService } from '../../services/auth';
 import { User, UserType } from '../../database';
+import { useTranslation } from 'react-i18next';
 
 interface HomePageProps {
   currentUser?: User | null;
@@ -11,6 +12,7 @@ interface HomePageProps {
 }
 
 function HomePage({ currentUser, onLogout, onGoToLogin }: HomePageProps) {
+  const t = useTranslation().t;
   const [user, setUser] = useState<User | null>(currentUser || null);
   const [loading, setLoading] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
@@ -87,26 +89,26 @@ useEffect(() => {
       // Validate all fields are filled
       if (!registrationData.nombre || !registrationData.apellidoPaterno || !registrationData.apellidoMaterno || 
           !registrationData.phone || !registrationData.email || !registrationData.password) {
-        throw new Error('Todos los campos son obligatorios');
+        throw new Error(t('home.camposObligatorios'));
       }
 
       // Validate email
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(registrationData.email)) {
-        throw new Error('Ingrese un email válido');
+        throw new Error(t('home.emailValido'));
       }
 
       // Validate phone (minimum 10 digits)
       if (registrationData.phone.length < 10) {
-        throw new Error('El teléfono debe tener al menos 10 dígitos');
+        throw new Error(t('home.telefonoDigitos'));
       }
 
       if (registrationData.password !== registrationData.confirmPassword) {
-        throw new Error('Las contraseñas no coinciden');
+        throw new Error(t('home.passwordsNoCoinciden'));
       }
 
       if (registrationData.password.length < 6) {
-        throw new Error('La contraseña debe tener al menos 6 caracteres');
+        throw new Error(t('home.passwordCaracteres'));
       }
 
       await AuthService.register({
@@ -136,10 +138,10 @@ useEffect(() => {
       setShowRegistrationForm(false);
       
       // Show success message (you could add a toast notification here)
-      alert('Usuario registrado exitosamente');
+      alert(t('home.usuarioRegistrado'));
 
     } catch (err) {
-      setRegistrationError(err instanceof Error ? err.message : 'Registration failed');
+      setRegistrationError(err instanceof Error ? err.message : t('home.registrationFailed'));
     } finally {
       setRegistrationLoading(false);
     }
@@ -158,14 +160,14 @@ const handleRegistrationImageChange = (e: React.ChangeEvent<HTMLInputElement>) =
 
 
 const handleDeleteUser = async (_userId: number) => {
-    if (window.confirm('Are you sure you want to delete this user?')) {
+    if (window.confirm(t('home.confirmDeleteUser'))) {
       try {
         // For now, just refresh the list since delete method doesn't exist
         await loadAllUsers(); 
-        alert('Delete functionality would be implemented here');
+        alert(t('home.deleteFunctionality'));
       } catch (error) {
         console.error('Error deleting user:', error);
-        alert('Error deleting user');
+        alert(t('home.errorDeletingUser'));
       }
     }
   };
@@ -194,7 +196,7 @@ const handleDeleteUser = async (_userId: number) => {
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
             <div className="flex items-center">
-              <img src="/icon.png" alt="Nexus" className="w-8 h-8 mr-3 logo-enhanced" />
+              <img src="/icon.png" alt={t('home.nexus')} className="w-8 h-8 mr-3 logo-enhanced" />
               <h1 className="text-xl font-bold text-enhanced">
                 Nexus
               </h1>
@@ -212,7 +214,7 @@ const handleDeleteUser = async (_userId: number) => {
                 >
                   <div className="w-10 h-10 rounded-full bg-purple-600/20 border-2 border-purple-400/30 flex items-center justify-center overflow-hidden">
                     {user?.profileImage ? (
-                      <img src={user.profileImage} alt="Profile" className="w-full h-full object-cover" />
+                      <img src={user.profileImage} alt={t('home.profile')} className="w-full h-full object-cover" />
                     ) : (
                       <svg className="w-6 h-6 text-purple-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
@@ -232,7 +234,7 @@ const handleDeleteUser = async (_userId: number) => {
                       <div className="flex items-center gap-3">
                         <div className="w-12 h-12 rounded-full bg-purple-600/20 border-2 border-purple-400/30 flex items-center justify-center overflow-hidden">
                           {user?.profileImage ? (
-                            <img src={user.profileImage} alt="Profile" className="w-full h-full object-cover" />
+                            <img src={user.profileImage} alt={t('home.profile')} className="w-full h-full object-cover" />
                           ) : (
                             <svg className="w-6 h-6 text-purple-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
@@ -241,13 +243,13 @@ const handleDeleteUser = async (_userId: number) => {
                         </div>
                         <div>
                           <p className="font-medium">{user?.nombre} {user?.apellidoPaterno}</p>
-                          <p className="text-xs text-gray-400">Member since {user?.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'Unknown'}</p>
+                          <p className="text-xs text-gray-400">{t('home.memberSinceDate', { date: user?.createdAt ? new Date(user.createdAt).toLocaleDateString() : t('home.unknown') })}</p>
                         </div>
                       </div>
                       
                       {/* Change Profile Image */}
                       <label className="mt-3 block w-full text-center px-3 py-2 bg-purple-600/20 hover:bg-purple-600/30 rounded-lg cursor-pointer transition-colors text-sm">
-                        Change Photo
+                        {t('home.changePhoto')}
                         <input
                           type="file"
                           accept="image/*"
@@ -265,7 +267,7 @@ const handleDeleteUser = async (_userId: number) => {
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                         </svg>
-                        Logout
+                        {t('home.logout')}
                       </button>
                     </div>
                   </div>
@@ -280,37 +282,37 @@ const handleDeleteUser = async (_userId: number) => {
       <main className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="text-center">
           <h2 className="text-4xl font-bold mb-4 text-enhanced">
-            Welcome back, {user?.nombre} {user?.apellidoPaterno}!
+            {t('home.welcomeBack', { nombre: user?.nombre, apellidoPaterno: user?.apellidoPaterno })}
           </h2>
           <p className="text-xl text-purple-200 mb-8">
-            Your Nexus workspace is ready
+            {t('home.workspaceReady')}
           </p>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-12">
             {/* Quick Stats */}
             <div className="glass-card rounded-xl p-6 hover:scale-[1.02] transition-all duration-300">
-              <h3 className="text-lg font-semibold mb-4 text-gradient">Quick Stats</h3>
+              <h3 className="text-lg font-semibold mb-4 text-gradient">{t('home.quickStats')}</h3>
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-tertiary">Last Login:</span>
-                  <span className="text-secondary">{user?.lastLogin ? new Date(user.lastLogin).toLocaleDateString() : 'First time'}</span>
+                  <span className="text-tertiary">{t('home.lastLogin')}</span>
+                  <span className="text-secondary">{user?.lastLogin ? new Date(user.lastLogin).toLocaleDateString() : t('home.firstTime')}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-tertiary">Member Since:</span>
-                  <span className="text-secondary">{user?.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'Unknown'}</span>
+                  <span className="text-tertiary">{t('home.memberSince')}</span>
+                  <span className="text-secondary">{user?.createdAt ? new Date(user.createdAt).toLocaleDateString() : t('home.unknown')}</span>
                 </div>
               </div>
             </div>
 
             {/* Recent Activity */}
             <div className="glass-card rounded-xl p-6 hover:scale-[1.02] transition-all duration-300">
-              <h3 className="text-lg font-semibold mb-4 text-gradient">Recent Activity</h3>
-              <p className="text-sm text-tertiary">No recent activity</p>
+              <h3 className="text-lg font-semibold mb-4 text-gradient">{t('home.recentActivity')}</h3>
+              <p className="text-sm text-tertiary">{t('home.noRecentActivity')}</p>
             </div>
 
 {/* Quick Actions */}
             <div className="glass-card rounded-xl p-6 hover:scale-[1.02] transition-all duration-300">
-              <h3 className="text-lg font-semibold mb-4 text-gradient">Quick Actions</h3>
+              <h3 className="text-lg font-semibold mb-4 text-gradient">{t('home.quickActions')}</h3>
               <div className="space-y-2">
 {(user?.type === 'owner' || user?.type === 'admin') && (
                   <>
@@ -318,13 +320,13 @@ const handleDeleteUser = async (_userId: number) => {
                       onClick={() => setShowRegistrationForm(true)}
                       className="w-full text-left px-3 py-2 accent-bg hover:accent-hover rounded-lg transition-all duration-300 text-sm text-white hover:scale-[1.02] shadow-md"
                     >
-                      Register New User
+                      {t('home.registerNewUser')}
                     </button>
                     <button 
                       onClick={() => setShowUsersList(true)}
                       className="w-full text-left px-3 py-2 accent-bg hover:accent-hover rounded-lg transition-all duration-300 text-sm text-white hover:scale-[1.02] shadow-md"
                     >
-                      View All Users
+                      {t('home.viewAllUsers')}
                     </button>
                   </>
                 )}
@@ -332,13 +334,13 @@ const handleDeleteUser = async (_userId: number) => {
                   onClick={onGoToLogin}
                   className="w-full text-left px-3 py-2 accent-bg hover:accent-hover rounded-lg transition-all duration-300 text-sm text-white hover:scale-[1.02] shadow-md"
                 >
-                  Go to Login
+                  {t('home.goToLogin')}
                 </button>
                 <button className="w-full text-left px-3 py-2 accent-bg hover:accent-hover rounded-lg transition-all duration-300 text-sm text-white hover:scale-[1.02] shadow-md">
-                  Settings
+                  {t('home.settings')}
                 </button>
 <button className="w-full text-left px-3 py-2 bg-purple-600/20 hover:bg-purple-600/30 rounded-lg transition-colors text-sm">
-                   Help & Support
+                   {t('home.helpSupport')}
                  </button>
 
 
@@ -368,9 +370,9 @@ const handleDeleteUser = async (_userId: number) => {
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                   </svg>
-                  Back to Home
+                  {t('home.backToHome')}
                 </button>
-                <h2 className="text-xl font-bold">Register New User</h2>
+                <h2 className="text-xl font-bold">{t('home.registerNewUser')}</h2>
                 <div className="w-20"></div>
               </div>
             </div>
@@ -409,26 +411,26 @@ const handleDeleteUser = async (_userId: number) => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {/* Nombre */}
                   <div>
-                    <label className="block text-sm font-medium mb-2 text-purple-200">Nombre</label>
+                    <label className="block text-sm font-medium mb-2 text-purple-200">{t('home.nombre')}</label>
                     <input
                       type="text"
                       value={registrationData.nombre}
                       onChange={(e) => setRegistrationData({...registrationData, nombre: e.target.value})}
                       className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg focus:outline-none focus:border-purple-400 focus:bg-white/15 transition-all text-white placeholder-gray-400"
-                      placeholder="Ingrese su nombre"
+                      placeholder={t('home.ingreseNombre')}
                       required
                     />
                   </div>
 
                   {/* Apellido Paterno */}
                   <div>
-                    <label className="block text-sm font-medium mb-2 text-purple-200">Apellido Paterno</label>
+                    <label className="block text-sm font-medium mb-2 text-purple-200">{t('home.apellidoPaterno')}</label>
                     <input
                       type="text"
                       value={registrationData.apellidoPaterno}
                       onChange={(e) => setRegistrationData({...registrationData, apellidoPaterno: e.target.value})}
                       className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg focus:outline-none focus:border-purple-400 focus:bg-white/15 transition-all text-white placeholder-gray-400"
-                      placeholder="Apellido paterno"
+                      placeholder={t('home.apellidoPaternoLabel')}
                       required
                     />
                   </div>
@@ -437,26 +439,26 @@ const handleDeleteUser = async (_userId: number) => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {/* Apellido Materno */}
                   <div>
-                    <label className="block text-sm font-medium mb-2 text-purple-200">Apellido Materno</label>
+                    <label className="block text-sm font-medium mb-2 text-purple-200">{t('home.apellidoMaterno')}</label>
                     <input
                       type="text"
                       value={registrationData.apellidoMaterno}
                       onChange={(e) => setRegistrationData({...registrationData, apellidoMaterno: e.target.value})}
                       className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg focus:outline-none focus:border-purple-400 focus:bg-white/15 transition-all text-white placeholder-gray-400"
-                      placeholder="Apellido materno"
+                      placeholder={t('home.apellidoMaternoLabel')}
                       required
                     />
                   </div>
 
                   {/* Phone */}
                   <div>
-                    <label className="block text-sm font-medium mb-2 text-purple-200">Teléfono</label>
+                    <label className="block text-sm font-medium mb-2 text-purple-200">{t('home.telefono')}</label>
                     <input
                       type="tel"
                       value={registrationData.phone}
                       onChange={(e) => setRegistrationData({...registrationData, phone: e.target.value})}
                       className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg focus:outline-none focus:border-purple-400 focus:bg-white/15 transition-all text-white placeholder-gray-400"
-                      placeholder="Teléfono"
+                      placeholder={t('home.telefonoLabel')}
                       required
                     />
                   </div>
@@ -464,54 +466,54 @@ const handleDeleteUser = async (_userId: number) => {
 
                 {/* Email */}
                 <div>
-                  <label className="block text-sm font-medium mb-2 text-purple-200">Email</label>
+                    <label className="block text-sm font-medium mb-2 text-purple-200">{t('home.email')}</label>
                   <input
                     type="email"
                     value={registrationData.email}
                     onChange={(e) => setRegistrationData({...registrationData, email: e.target.value})}
                     className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg focus:outline-none focus:border-purple-400 focus:bg-white/15 transition-all text-white placeholder-gray-400"
-                    placeholder="Email"
+                      placeholder={t('home.emailLabel')}
                     required
                   />
                 </div>
 
                 {/* User Type */}
                 <div>
-                  <label className="block text-sm font-medium mb-2 text-purple-200">User Type</label>
+                  <label className="block text-sm font-medium mb-2 text-purple-200">{t('home.userType')}</label>
                   <select
                     value={registrationData.type}
                     onChange={(e) => setRegistrationData({...registrationData, type: e.target.value as UserType})}
                     className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg focus:outline-none focus:border-purple-400 focus:bg-white/15 transition-all text-white"
                     required
                   >
-                    <option value="admin" className="bg-neutral-800">Admin</option>
-                    <option value="cashier" className="bg-neutral-800">Cashier</option>
+                    <option value="admin" className="bg-neutral-800">{t('home.admin')}</option>
+                    <option value="cashier" className="bg-neutral-800">{t('home.cashier')}</option>
                   </select>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {/* Password */}
                   <div>
-                    <label className="block text-sm font-medium mb-2 text-purple-200">Password</label>
+                    <label className="block text-sm font-medium mb-2 text-purple-200">{t('home.password')}</label>
                     <input
                       type="password"
                       value={registrationData.password}
                       onChange={(e) => setRegistrationData({...registrationData, password: e.target.value})}
                       className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg focus:outline-none focus:border-purple-400 focus:bg-white/15 transition-all text-white placeholder-gray-400"
-                      placeholder="Password"
+                      placeholder={t('home.passwordLabel')}
                       required
                     />
                   </div>
 
                   {/* Confirm Password */}
                   <div>
-                    <label className="block text-sm font-medium mb-2 text-purple-200">Confirm Password</label>
+                    <label className="block text-sm font-medium mb-2 text-purple-200">{t('home.confirmPassword')}</label>
                     <input
                       type="password"
                       value={registrationData.confirmPassword}
                       onChange={(e) => setRegistrationData({...registrationData, confirmPassword: e.target.value})}
                       className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg focus:outline-none focus:border-purple-400 focus:bg-white/15 transition-all text-white placeholder-gray-400"
-                      placeholder="Confirm password"
+                      placeholder={t('home.confirmPasswordLabel')}
                       required
                     />
                   </div>
@@ -533,11 +535,9 @@ const handleDeleteUser = async (_userId: number) => {
                   {registrationLoading ? (
                     <>
                       <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                      Creating Account...
+                      {t('home.creatingAccount')}
                     </>
-                  ) : (
-                    'Create User Account'
-                  )}
+                  ) : t('home.createUserAccount')}
                 </button>
               </form>
             </div>
@@ -565,14 +565,14 @@ const handleDeleteUser = async (_userId: number) => {
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                   </svg>
-                  Back to Home
+                  {t('home.backToHome')}
                 </button>
-                <h2 className="text-xl font-bold">All Users ({allUsers.length})</h2>
+                <h2 className="text-xl font-bold">{t('home.allUsers', { count: allUsers.length })}</h2>
                 <button
                   onClick={loadAllUsers}
                   className="px-4 py-2 bg-purple-600/20 hover:bg-purple-600/30 rounded-lg transition-colors text-sm"
                 >
-                  Refresh
+                  {t('home.refresh')}
                 </button>
               </div>
             </div>
@@ -582,7 +582,7 @@ const handleDeleteUser = async (_userId: number) => {
           <div className="relative z-10 max-w-6xl mx-auto px-4 py-8">
             {allUsers.length === 0 ? (
               <div className="text-center py-12">
-                <p className="text-gray-400 text-lg">No users found</p>
+                <p className="text-gray-400 text-lg">{t('home.noUsersFound')}</p>
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -591,7 +591,7 @@ const handleDeleteUser = async (_userId: number) => {
                      <div className="flex items-center gap-4 mb-4">
                        <div className="w-16 h-16 rounded-full accent-bg/20 border-2 accent/30 flex items-center justify-center overflow-hidden">
                          {user.profileImage ? (
-                           <img src={user.profileImage} alt="Profile" className="w-full h-full object-cover" />
+                           <img src={user.profileImage} alt={t('home.profile')} className="w-full h-full object-cover" />
                          ) : (
                            <svg className="w-8 h-8 accent-text" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
@@ -607,9 +607,9 @@ const handleDeleteUser = async (_userId: number) => {
                      </div>
                      
                      <div className="space-y-2 text-sm text-secondary">
-                       <p><span className="text-tertiary">Email:</span> {user.email}</p>
-                       <p><span className="text-tertiary">Phone:</span> {user.phone}</p>
-                       <p><span className="text-tertiary">Member:</span> {new Date(user.createdAt).toLocaleDateString()}</p>
+                       <p><span className="text-tertiary">{t('home.emailColon')}</span> {user.email}</p>
+                       <p><span className="text-tertiary">{t('home.phoneColon')}</span> {user.phone}</p>
+                       <p><span className="text-tertiary">{t('home.memberColon')}</span> {new Date(user.createdAt).toLocaleDateString()}</p>
                      </div>
                      
                      <div className="mt-4 flex gap-2">
@@ -617,7 +617,7 @@ const handleDeleteUser = async (_userId: number) => {
                          onClick={() => handleDeleteUser(user.id!)}
                          className="flex-1 px-3 py-2 bg-red-500/20 hover:bg-red-500/30 rounded-lg transition-all duration-300 text-red-300 text-sm hover:scale-[1.02]"
                        >
-                         Delete
+                         {t('home.delete')}
                        </button>
                      </div>
                    </div>
