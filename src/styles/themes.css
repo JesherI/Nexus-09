@@ -1,29 +1,5 @@
-/* Light Theme - Purple, Black, White palette */
+/* Light Theme - Swapped from Dark */
 :root[data-theme="light"] {
-  --bg-primary: #e9d5ff;
-  --bg-secondary: #d8b4fe;
-  --bg-tertiary: #c084fc;
-  --text-primary: #581c87;
-  --text-secondary: #7c3aed;
-  --text-tertiary: #a855f7;
-  --border-color: #a855f7;
-  --shadow: rgba(139, 92, 246, 0.15);
-  --accent: #8b5cf6;
-  --accent-hover: #7c3aed;
-  --accent-light: #a855f7;
-  --gradient-start: #e9d5ff;
-  --gradient-mid: #d8b4fe;
-  --gradient-end: #c084fc;
-  --decoration-primary: #8b5cf6;
-  --decoration-secondary: rgba(139, 92, 246, 0.1);
-  --decoration-tertiary: rgba(139, 92, 246, 0.08);
-  --glass-bg: rgba(233, 213, 255, 0.95);
-  --glass-border: rgba(139, 92, 246, 0.3);
-  --logo-filter: drop-shadow(0 0 20px rgba(139, 92, 246, 0.8));
-}
-
-/* Dark Theme - Purple, Black, White palette */
-:root[data-theme="dark"] {
   --bg-primary: #0a0a0a;
   --bg-secondary: #1a1a1a;
   --bg-tertiary: #262626;
@@ -44,6 +20,30 @@
   --glass-bg: rgba(0, 0, 0, 0.8);
   --glass-border: rgba(255, 255, 255, 0.1);
   --logo-filter: drop-shadow(0 0 20px rgba(139, 92, 246, 0.8));
+}
+
+/* Dark Theme - Pure Black with Contrast */
+:root[data-theme="dark"] {
+  --bg-primary: #000000;
+  --bg-secondary: #111111;
+  --bg-tertiary: #222222;
+  --text-primary: #ffffff;
+  --text-secondary: #e0e0e0;
+  --text-tertiary: #aaaaaa;
+  --border-color: #444444;
+  --shadow: rgba(0, 0, 0, 0.5);
+  --accent: #5b5c5c;
+  --accent-hover: #cccccc;
+  --accent-light: #ffffff;
+  --gradient-start: #000000;
+  --gradient-mid: #111111;
+  --gradient-end: #222222;
+  --decoration-primary: #ffffff;
+  --decoration-secondary: rgba(255, 255, 255, 0.15);
+  --decoration-tertiary: rgba(255, 255, 255, 0.1);
+  --glass-bg: rgba(0, 0, 0, 0.9);
+  --glass-border: rgba(255, 255, 255, 0.2);
+  --logo-filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.8));
 }
 
 /* Base theme classes */
@@ -134,7 +134,7 @@
 
 .input-theme:focus {
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.1);
   background: rgba(128, 128, 128, 0.3);
 }
 
@@ -149,7 +149,7 @@
 
 .login-input:focus {
   border-color: var(--accent) !important;
-  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1) !important;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.1) !important;
   background: rgba(128, 128, 128, 0.35) !important;
 }
 
@@ -179,7 +179,7 @@
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  filter: drop-shadow(0 0 10px rgba(139, 92, 246, 0.3));
+  filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.3));
 }
 
 /* Profile container for login page */
