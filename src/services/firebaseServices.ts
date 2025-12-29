@@ -26,6 +26,8 @@ export interface BusinessData {
   logo?: string;
   createdAt: Date;
   ownerIds: string[]; // Array of owner UIDs
+  adminIds: string[]; // Array of admin UIDs
+  cashierIds: string[]; // Array of cashier UIDs
 }
 
 export interface OwnerData {
@@ -59,11 +61,13 @@ export class FirebaseServices {
   static async registerBusiness(businessData: Omit<BusinessData, 'ownerIds' | 'id'>): Promise<string> {
     try {
       const businessRef = doc(collection(firestore, 'businesses'));
-      const businessWithId = {
-        ...businessData,
-        id: businessRef.id,
-        ownerIds: [] // Initialize empty array
-      };
+       const businessWithId = {
+         ...businessData,
+         id: businessRef.id,
+         ownerIds: [], // Initialize empty array
+         adminIds: [],
+         cashierIds: []
+       };
 
       // Filter out undefined values for Firestore
       const filteredBusiness: any = {};
@@ -214,6 +218,44 @@ export class FirebaseServices {
     }
   }
 
+  // Add admin to business adminIds array
+  static async addAdminToBusiness(businessId: string, adminId: string): Promise<void> {
+    try {
+      const businessRef = doc(firestore, 'businesses', businessId);
+      const businessDoc = await getDoc(businessRef);
+      if (businessDoc.exists()) {
+        const currentAdminIds = businessDoc.data()?.adminIds || [];
+        if (!currentAdminIds.includes(adminId)) {
+          await updateDoc(businessRef, {
+            adminIds: [...currentAdminIds, adminId]
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Error adding admin to business:', error);
+      throw new Error('Failed to add admin to business');
+    }
+  }
+
+  // Add cashier to business cashierIds array
+  static async addCashierToBusiness(businessId: string, cashierId: string): Promise<void> {
+    try {
+      const businessRef = doc(firestore, 'businesses', businessId);
+      const businessDoc = await getDoc(businessRef);
+      if (businessDoc.exists()) {
+        const currentCashierIds = businessDoc.data()?.cashierIds || [];
+        if (!currentCashierIds.includes(cashierId)) {
+          await updateDoc(businessRef, {
+            cashierIds: [...currentCashierIds, cashierId]
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Error adding cashier to business:', error);
+      throw new Error('Failed to add cashier to business');
+    }
+  }
+
   // Check if user is owner of business
   static async isOwnerOfBusiness(uid: string, businessId: string): Promise<boolean> {
     try {
@@ -288,12 +330,16 @@ export class FirebaseServices {
 
       await setDoc(userRef, filteredUser);
 
-      // If user is owner, also add to owners collection and business ownerIds
-      if (userData.type === 'owner') {
-        const ownerRef = doc(collection(firestore, 'owners'), user.uid);
-        await setDoc(ownerRef, filteredUser);
-        await this.addOwnerToBusiness(userData.businessId, user.uid);
-      }
+       // Add user to appropriate business arrays
+       if (userData.type === 'owner') {
+         const ownerRef = doc(collection(firestore, 'owners'), user.uid);
+         await setDoc(ownerRef, filteredUser);
+         await this.addOwnerToBusiness(userData.businessId, user.uid);
+       } else if (userData.type === 'admin') {
+         await this.addAdminToBusiness(userData.businessId, user.uid);
+       } else if (userData.type === 'cashier') {
+         await this.addCashierToBusiness(userData.businessId, user.uid);
+       }
 
       return { user };
     } catch (error: any) {

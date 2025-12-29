@@ -35,10 +35,12 @@ export class AuthService {
     // Determine user type based on first time or current user's role
     const isFirstTime = await this.isFirstTime();
     let userType: UserType;
+    let businessId = userData.businessId;
 
     if (isFirstTime) {
       // First user is always owner
       userType = 'owner';
+      businessId = businessId || crypto.randomUUID();
     } else {
       // Validate role-based registration
       if (!userData.currentUserRole) {
@@ -65,7 +67,7 @@ export class AuthService {
     const hashedPassword = hashPassword(userData.password);
 
     const newUser: User = {
-      businessId: userData.businessId,
+      businessId: businessId,
       nombre: userData.nombre,
       apellidoPaterno: userData.apellidoPaterno,
       apellidoMaterno: userData.apellidoMaterno,
@@ -88,7 +90,7 @@ export class AuthService {
         email: userData.email,
         profileImage: userData.profileImage,
         type: userType,
-        businessId: userData.businessId || '',
+        businessId: businessId || '',
         createdAt: new Date()
       };
       const { user } = await FirebaseServices.registerUser(firebaseUserData, userData.password);

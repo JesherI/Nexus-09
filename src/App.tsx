@@ -24,19 +24,10 @@ useEffect(() => {
       // Primero mostrar loading por 10 segundos
       await new Promise(resolve => setTimeout(resolve, 10000));
 
-      // Sync Firebase users to local DB
-      await AuthService.syncFirebaseUsers();
+       // Sync Firebase users to local DB
+       await AuthService.syncFirebaseUsers();
 
-      // Verificar si hay un usuario en sesión
-      const currentUser = await AuthService.getCurrentUser();
-      if (currentUser) {
-        setCurrentUser(currentUser);
-        setBusinessId(currentUser.businessId || null);
-        setCurrentPage('home');
-        return;
-      }
-
-      // Verificar si es la primera vez
+       // Verificar si es la primera vez
       let isFirstTime: boolean;
       try {
         isFirstTime = await AuthService.isFirstTime();
@@ -98,11 +89,9 @@ useEffect(() => {
     try {
       // Use AuthService which now handles both Firebase and local login
       const { user } = await AuthService.login(email, password);
-      setCurrentUser(user);
-      setBusinessId(user.businessId || null);
-      // Store user session
-      await AuthService.storeToken(user);
-      setCurrentPage('home');
+       setCurrentUser(user);
+       setBusinessId(user.businessId || null);
+       setCurrentPage('home');
     } catch (error) {
       console.error('Login error:', error);
       throw error;

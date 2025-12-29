@@ -45,8 +45,9 @@ useEffect(() => {
 
   const loadAllUsers = async () => {
     try {
-      const users = await AuthService.getAllUsers();
-      setAllUsers(users);
+      const allUsers = await AuthService.getAllUsers();
+      const businessUsers = allUsers.filter(u => u.businessId === user?.businessId);
+      setAllUsers(businessUsers);
     } catch (error) {
       console.error('Error loading users:', error);
     }
@@ -120,7 +121,8 @@ useEffect(() => {
         password: registrationData.password,
         profileImage: registrationProfileImage,
         type: registrationData.type,
-        currentUserRole: user?.type
+        currentUserRole: user?.type,
+        businessId: user?.businessId
       });
 
       // Reset form
