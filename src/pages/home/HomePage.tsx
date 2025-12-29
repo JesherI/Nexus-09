@@ -45,8 +45,9 @@ useEffect(() => {
 
   const loadAllUsers = async () => {
     try {
-      const users = await AuthService.getAllUsers();
-      setAllUsers(users);
+      const allUsers = await AuthService.getAllUsers();
+      const businessUsers = allUsers.filter(u => u.businessId === user?.businessId);
+      setAllUsers(businessUsers);
     } catch (error) {
       console.error('Error loading users:', error);
     }
@@ -120,7 +121,8 @@ useEffect(() => {
         password: registrationData.password,
         profileImage: registrationProfileImage,
         type: registrationData.type,
-        currentUserRole: user?.type
+        currentUserRole: user?.type,
+        businessId: user?.businessId
       });
 
       // Reset form
@@ -159,7 +161,7 @@ const handleRegistrationImageChange = (e: React.ChangeEvent<HTMLInputElement>) =
   };
 
 
-const handleDeleteUser = async (_userId: number) => {
+const handleDeleteUser = async (_userId: string) => {
     if (window.confirm(t('home.confirmDeleteUser'))) {
       try {
         // For now, just refresh the list since delete method doesn't exist
@@ -247,16 +249,24 @@ const handleDeleteUser = async (_userId: number) => {
                         </div>
                       </div>
                       
-                      {/* Change Profile Image */}
-                      <label className="mt-3 block w-full text-center px-3 py-2 bg-purple-600/20 hover:bg-purple-600/30 rounded-lg cursor-pointer transition-colors text-sm">
-                        {t('home.changePhoto')}
-                        <input
-                          type="file"
-                          accept="image/*"
-                          onChange={handleImageChange}
-                          className="hidden"
-                        />
-                      </label>
+                       {/* Change Profile Image */}
+                       <label className="mt-3 block w-full text-center px-3 py-2 bg-purple-600/20 hover:bg-purple-600/30 rounded-lg cursor-pointer transition-colors text-sm">
+                         {t('home.changePhoto')}
+                         <input
+                           type="file"
+                           accept="image/*"
+                           onChange={handleImageChange}
+                           className="hidden"
+                         />
+                       </label>
+
+                       {/* Switch User */}
+                       <button
+                         onClick={() => { setShowProfileMenu(false); onGoToLogin(); }}
+                         className="mt-3 w-full text-left px-3 py-2 hover:bg-white/10 rounded-lg transition-colors text-sm"
+                       >
+                         Cambiar de Usuario
+                       </button>
                     </div>
                     
                     <div className="p-2">

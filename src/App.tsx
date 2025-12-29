@@ -3,31 +3,44 @@ import "./App.css";
 import "./styles/themes.css";
 import StartPage from "./pages/welcome/StartPage";
 import BusinessSetupPage from "./pages/BusinessSetupPage";
+import PosSetupPage from "./pages/PosSetupPage";
 import SignUpPage from "./pages/SignUpPage";
 import LoginPage from "./pages/LoginPage";
 import HomePage from "./pages/home/HomePage";
 import { AuthService } from "./services/auth";
 import { ThemeProvider } from "./contexts/ThemeContext";
-import { UserType, User } from "./database";
+import { UserType, User, db } from "./database";
 import { invoke } from "@tauri-apps/api/core";
 
-type Page = 'loading' | 'start' | 'business' | 'signup' | 'login' | 'home';
+type Page = 'loading' | 'start' | 'business' | 'pos' | 'signup' | 'login' | 'home';
 
 function App() {
   const [currentPage, setCurrentPage] = useState<Page>('loading');
   const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [businessId, setBusinessId] = useState<number | null>(null);
+  const [businessId, setBusinessId] = useState<string | null>(null);
 
 useEffect(() => {
     const initializeApp = async () => {
       // Primero mostrar loading por 10 segundos
       await new Promise(resolve => setTimeout(resolve, 10000));
 
-      // Limpiar cualquier token almacenado por seguridad
-      await AuthService.removeStoredToken();
+       // Sync Firebase users to local DB
+       await AuthService.syncFirebaseUsers();
 
-      // Verificar si es la primera vez
-      const isFirstTime = await AuthService.isFirstTime();
+       // Verificar si es la primera vez
+      let isFirstTime: boolean;
+      try {
+        isFirstTime = await AuthService.isFirstTime();
+      } catch (error: any) {
+        // Si hay error de upgrade de base de datos, limpiar y reiniciar
+        if (error.name === 'DatabaseClosedError' && error.message.includes('UpgradeError')) {
+          console.log('Database upgrade failed, clearing database...');
+          await db.delete();
+          window.location.reload();
+          return;
+        }
+        throw error;
+      }
       if (isFirstTime) {
         setCurrentPage('start');
       } else {
@@ -42,12 +55,16 @@ useEffect(() => {
     setCurrentPage('business');
   };
 
-  const handleBusinessSetup = (id: number) => {
+  const handleBusinessSetup = (id: string) => {
     setBusinessId(id);
+    setCurrentPage('pos');
+  };
+
+  const handlePosSetup = () => {
     setCurrentPage('signup');
   };
 
-const handleSignUp = async (userData: {
+  const handleSignUp = async (userData: {
     nombre: string;
     apellidoPaterno: string;
     apellidoMaterno: string;
@@ -59,6 +76,7 @@ const handleSignUp = async (userData: {
     currentUserRole?: UserType;
   }) => {
     try {
+      // Use AuthService which now handles both local and Firebase registration
       await AuthService.register({ ...userData, businessId: businessId || undefined });
       setCurrentPage('login');
     } catch (error) {
@@ -67,11 +85,13 @@ const handleSignUp = async (userData: {
     }
   };
 
-const handleLogin = async (email: string, password: string) => {
+  const handleLogin = async (email: string, password: string) => {
     try {
+      // Use AuthService which now handles both Firebase and local login
       const { user } = await AuthService.login(email, password);
-      setCurrentUser(user);
-      setCurrentPage('home');
+       setCurrentUser(user);
+       setBusinessId(user.businessId || null);
+       setCurrentPage('home');
     } catch (error) {
       console.error('Login error:', error);
       throw error;
@@ -82,9 +102,13 @@ const handleLogin = async (email: string, password: string) => {
 
 const handleLogout = async () => {
     try {
-      // Limpiar cualquier token almacenado
+      // Logout from Firebase
+      const { FirebaseServices } = await import('./services/firebaseServices');
+      await FirebaseServices.logout();
+      // Limpiar sesión local
       await AuthService.removeStoredToken();
       setCurrentUser(null);
+      setBusinessId(null);
       setCurrentPage('login');
     } catch (error) {
       console.error('Logout error:', error);
@@ -144,8 +168,11 @@ const handleLogout = async () => {
       case 'business':
         return <BusinessSetupPage onBusinessSetup={handleBusinessSetup} onBack={() => setCurrentPage('start')} />;
 
+      case 'pos':
+        return <PosSetupPage businessId={businessId!} onPosSetup={handlePosSetup} onBack={() => setCurrentPage('business')} />;
+
       case 'signup':
-        return <SignUpPage onSignUp={handleSignUp} onBack={() => setCurrentPage('business')} currentUserRole={undefined} />;
+        return <SignUpPage onSignUp={handleSignUp} onBack={() => setCurrentPage('pos')} currentUserRole={undefined} />;
 
 case 'login':
         return <LoginPage onLogin={handleLogin} onForceClose={handleForceClose} />;

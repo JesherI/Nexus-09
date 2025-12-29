@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import NeuralParticles from "../components/NeuralParticles";
-import { db, Business } from "../database";
+import { FirebaseServices } from "../services/firebaseServices";
 
 interface BusinessSetupPageProps {
-  onBusinessSetup: (businessId: number) => void;
+  onBusinessSetup: (businessId: string) => void;
   onBack: () => void;
 }
 
@@ -20,6 +20,9 @@ function BusinessSetupPage({ onBusinessSetup, onBack }: BusinessSetupPageProps) 
   });
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
+
+  const isFormValid = formData.name.trim() && formData.location.trim() && formData.phone.trim();
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -52,18 +55,23 @@ function BusinessSetupPage({ onBusinessSetup, onBack }: BusinessSetupPageProps) 
         });
       }
 
-      const business: Business = {
-        name: formData.name,
-        location: formData.location,
-        website: formData.website || undefined,
-        email: formData.email || undefined,
-        phone: formData.phone,
-        logo: logoBase64,
-        createdAt: new Date(),
-      };
+       const businessData = {
+         name: formData.name,
+         location: formData.location,
+         website: formData.website || undefined,
+         email: formData.email || undefined,
+         phone: formData.phone,
+         logo: logoBase64,
+         createdAt: new Date(),
+       };
 
-      const businessId = await db.businesses.add(business);
-      onBusinessSetup(businessId as number);
+       const { id: businessId, isExisting } = await FirebaseServices.registerBusiness(businessData);
+       if (isExisting) {
+         setMessage(t('business.businessAlreadyExists'));
+       } else {
+         setMessage(t('business.businessRegistered'));
+       }
+       onBusinessSetup(businessId);
     } catch (error) {
       console.error('Error creating business:', error);
       // Handle error, maybe show message
@@ -107,32 +115,39 @@ function BusinessSetupPage({ onBusinessSetup, onBack }: BusinessSetupPageProps) 
 
          {/* Form Container */}
          <div className="glass-card rounded-2xl p-8">
-          {/* Logo Upload */}
-          <div className="flex justify-center mb-6">
-            <div className="relative">
-              <div className="w-24 h-24 rounded-full bg-purple-600/20 border-2 border-purple-400/30 flex items-center justify-center overflow-hidden">
-                {logoPreview ? (
-                  <img src={logoPreview} alt={t('business.logoLabel')} className="w-full h-full object-cover" />
-                ) : (
-                  <svg className="w-12 h-12 text-purple-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
-                  </svg>
-                )}
-              </div>
-              <label className="absolute bottom-0 right-0 w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center cursor-pointer hover:bg-purple-600 transition-colors">
-                <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                </svg>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleLogoChange}
-                  className="hidden"
-                />
-              </label>
+          {/* Message */}
+          {message && (
+            <div className="mb-6 p-3 bg-purple-500/20 border border-purple-500/30 rounded-lg text-secondary text-sm">
+              {message}
             </div>
-          </div>
+          )}
+
+          {/* Logo Upload */}
+           <div className="flex justify-center mb-6">
+             <div className="relative">
+               <div className="w-24 h-24 rounded-full bg-purple-600/20 border-2 border-purple-400/30 flex items-center justify-center overflow-hidden">
+                 {logoPreview ? (
+                   <img src={logoPreview} alt={t('business.logoLabel')} className="w-full h-full object-cover" />
+                 ) : (
+                   <svg className="w-12 h-12 text-purple-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                   </svg>
+                 )}
+               </div>
+               <label className="absolute bottom-0 right-0 w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center cursor-pointer hover:bg-purple-600 transition-colors">
+                 <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                 </svg>
+                 <input
+                   type="file"
+                   accept="image/*"
+                   onChange={handleLogoChange}
+                   className="hidden"
+                 />
+               </label>
+             </div>
+           </div>
 
           <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
@@ -199,11 +214,11 @@ function BusinessSetupPage({ onBusinessSetup, onBack }: BusinessSetupPageProps) 
             </div>
 
             <div className="md:col-span-2 flex justify-center">
-              <button
-                type="submit"
-                disabled={loading}
-                 className="bg-gradient-to-r from-[var(--accent)] to-[var(--accent-light)] hover:from-[var(--accent-light)] hover:to-[var(--accent-hover)] disabled:opacity-50 disabled:cursor-not-allowed text-primary font-medium py-3 px-8 rounded-lg transition-all duration-200 flex items-center justify-center gap-2"
-              >
+               <button
+                 type="submit"
+                 disabled={loading || !isFormValid}
+                  className="bg-gradient-to-r from-[var(--accent)] to-[var(--accent-light)] hover:from-[var(--accent-light)] hover:to-[var(--accent-hover)] disabled:opacity-50 disabled:cursor-not-allowed text-primary font-medium py-3 px-8 rounded-lg transition-all duration-200 flex items-center justify-center gap-2"
+               >
                 {loading ? (
                   <>
                     <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>

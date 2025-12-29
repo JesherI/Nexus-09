@@ -1,5 +1,6 @@
 import { db, User, UserType } from '../database';
 import { hashPassword, verifyPassword } from '../utils/auth';
+import { FirebaseServices } from './firebaseServices';
 
 export class AuthService {
   static async isFirstTime(): Promise<boolean> {
@@ -17,15 +18,15 @@ export class AuthService {
     profileImage?: string;
     type?: UserType; // Make optional - will be determined automatically
     currentUserRole?: UserType; // Role of the current user making the registration
-    businessId?: number;
+    businessId?: string;
   }): Promise<User> {
-    // Check if email already exists
+    // Check if email already exists locally
     const existingUser = await db.users.where('email').equals(userData.email).first();
     if (existingUser) {
       throw new Error('Email already exists');
     }
 
-    // Check if phone already exists
+    // Check if phone already exists locally
     const existingPhone = await db.users.where('phone').equals(userData.phone).first();
     if (existingPhone) {
       throw new Error('Phone already exists');
@@ -34,10 +35,12 @@ export class AuthService {
     // Determine user type based on first time or current user's role
     const isFirstTime = await this.isFirstTime();
     let userType: UserType;
-    
+    let businessId = userData.businessId;
+
     if (isFirstTime) {
       // First user is always owner
       userType = 'owner';
+      businessId = businessId || crypto.randomUUID();
     } else {
       // Validate role-based registration
       if (!userData.currentUserRole) {
@@ -62,9 +65,9 @@ export class AuthService {
     }
 
     const hashedPassword = hashPassword(userData.password);
-    
+
     const newUser: User = {
-      businessId: userData.businessId,
+      businessId: businessId,
       nombre: userData.nombre,
       apellidoPaterno: userData.apellidoPaterno,
       apellidoMaterno: userData.apellidoMaterno,
@@ -76,13 +79,81 @@ export class AuthService {
       createdAt: new Date()
     };
 
-    const id = await db.users.add(newUser);
-    return { ...newUser, id };
+    // Register in Firebase first
+    let firebaseUserId: string | undefined;
+    try {
+      const firebaseUserData = {
+        nombre: userData.nombre,
+        apellidoPaterno: userData.apellidoPaterno,
+        apellidoMaterno: userData.apellidoMaterno,
+        phone: userData.phone,
+        email: userData.email,
+        profileImage: userData.profileImage,
+        type: userType,
+        businessId: businessId || '',
+        createdAt: new Date()
+      };
+      const { user } = await FirebaseServices.registerUser(firebaseUserData, userData.password);
+      firebaseUserId = user.uid;
+    } catch (firebaseError) {
+      console.error('Firebase registration failed:', firebaseError);
+      // Continue with local registration even if Firebase fails
+    }
+
+    // Register locally
+    const userId = firebaseUserId || crypto.randomUUID();
+    const localUser = { ...newUser, id: userId };
+    const id = await db.users.add(localUser);
+    return { ...localUser, id };
   }
 
-static async login(email: string, password: string): Promise<{ user: User }> {
+ static async login(email: string, password: string): Promise<{ user: User }> {
+    // Try Firebase login first
+    try {
+      const { user: firebaseUser, userData } = await FirebaseServices.loginUser(email, password);
+      if (userData) {
+        // Convert Firebase user data to local format
+        const localUser: User = {
+          id: firebaseUser.uid,
+          businessId: userData.businessId,
+          nombre: userData.nombre,
+          apellidoPaterno: userData.apellidoPaterno,
+          apellidoMaterno: userData.apellidoMaterno,
+          phone: userData.phone,
+          email: userData.email,
+          password: '', // Not stored for Firebase users
+          profileImage: userData.profileImage,
+          type: userData.type as UserType,
+          createdAt: userData.createdAt,
+          lastLogin: userData.lastLogin
+        };
+
+        // Update local DB if user exists, or add if not
+        const existingLocalUser = await db.users.where('email').equals(email).first();
+        if (existingLocalUser) {
+          await db.users.update(existingLocalUser.id!, {
+            lastLogin: new Date(),
+            profileImage: userData.profileImage
+          });
+          localUser.id = existingLocalUser.id;
+        } else {
+          const id = await db.users.add({
+            ...localUser,
+            password: hashPassword(password) // Store hashed password for offline login
+          });
+          localUser.id = id;
+        }
+
+        return { user: localUser };
+      }
+    } catch (firebaseError) {
+      console.error('Firebase login failed:', firebaseError);
+      // Fall back to local login
+    }
+
+    // Local login fallback
     const user = await db.users.where('email').equals(email).first();
-    
+
     if (!user || !verifyPassword(password, user.password)) {
       throw new Error('Invalid email or password');
     }
@@ -93,8 +164,21 @@ static async login(email: string, password: string): Promise<{ user: User }> {
     return { user };
   }
 
-static async getCurrentUser(): Promise<User | null> {
-    // Ya no hay persistencia de sesión, siempre retorna null
+ static async getCurrentUser(): Promise<User | null> {
+    const storedToken = await this.getStoredToken();
+    if (storedToken) {
+      try {
+        // Parse stored user data
+        const userData = JSON.parse(storedToken);
+        // Verify user still exists in local DB
+        const user = await db.users.get(userData.id);
+        if (user) {
+          return user;
+        }
+      } catch (error) {
+        console.error('Error getting current user:', error);
+      }
+    }
     return null;
   }
 
@@ -103,7 +187,7 @@ static async logout(): Promise<void> {
     await db.sessions.clear();
   }
 
-  static async updateProfile(userId: number, profileImage: string): Promise<void> {
+  static async updateProfile(userId: string, profileImage: string): Promise<void> {
     await db.users.update(userId, { profileImage });
   }
 
@@ -114,9 +198,9 @@ static async getStoredToken(): Promise<string | null> {
     return null;
   }
 
-  static async storeToken(token: string): Promise<void> {
+ static async storeToken(userData: User): Promise<void> {
     if (typeof window !== 'undefined') {
-      localStorage.setItem('authToken', token);
+      localStorage.setItem('authToken', JSON.stringify(userData));
     }
   }
 
@@ -132,5 +216,40 @@ static async getAllUsers(): Promise<User[]> {
 
   static async clearAllSessions(): Promise<void> {
     await db.sessions.clear();
+  }
+
+  static async syncFirebaseUsers(): Promise<void> {
+    try {
+      // Get current user from Firebase Auth state
+      const { auth } = await import('../firebase');
+      const currentFirebaseUser = auth.currentUser;
+      if (currentFirebaseUser) {
+        // Check if user exists locally
+        const localUser = await db.users.where('email').equals(currentFirebaseUser.email!).first();
+        if (!localUser) {
+          // Get user data from Firebase
+          const userData = await FirebaseServices.getUser(currentFirebaseUser.uid);
+          if (userData) {
+            // Add to local DB
+            await db.users.add({
+              id: currentFirebaseUser.uid,
+              businessId: userData.businessId,
+              nombre: userData.nombre,
+              apellidoPaterno: userData.apellidoPaterno,
+              apellidoMaterno: userData.apellidoMaterno,
+              phone: userData.phone,
+              email: userData.email,
+              password: '', // Firebase users don't store password locally
+              profileImage: userData.profileImage,
+              type: userData.type as UserType,
+              createdAt: userData.createdAt,
+              lastLogin: userData.lastLogin
+            });
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error syncing Firebase users:', error);
+    }
   }
 }
