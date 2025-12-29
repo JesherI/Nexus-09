@@ -3,7 +3,7 @@ import Dexie, { Table } from 'dexie';
 export type UserType = 'owner' | 'admin' | 'cashier';
 
 export interface Business {
-  id?: number;
+  id?: string;
   name: string;
   logo?: string; // base64 image data
   location: string;
@@ -14,8 +14,8 @@ export interface Business {
 }
 
 export interface User {
-  id?: number;
-  businessId?: number; // reference to business
+  id?: string;
+  businessId?: string; // reference to business
   nombre: string;
   apellidoPaterno: string;
   apellidoMaterno: string;
@@ -29,8 +29,8 @@ export interface User {
 }
 
 export interface Session {
-  id?: number;
-  userId: number;
+  id?: string;
+  userId: string;
   token: string;
   createdAt: Date;
   expiresAt: Date;
@@ -38,7 +38,7 @@ export interface Session {
 
 export interface PosSettings {
   id?: number;
-  businessId: number;
+  businessId: string;
   timezone: string;
   dateFormat: string;
   currency: string;
@@ -54,10 +54,10 @@ class AppDatabase extends Dexie {
   constructor() {
     super('NexusAppDB');
 
-    this.version(2).stores({
-      users: '++id, email, phone, type, createdAt, lastLogin',
-      businesses: '++id, name, location, phone, createdAt',
-      sessions: '++id, userId, token, createdAt, expiresAt',
+    this.version(3).stores({
+      users: 'id, email, phone, type, createdAt, lastLogin',
+      businesses: 'id, name, location, phone, createdAt',
+      sessions: 'id, userId, token, createdAt, expiresAt',
       posSettings: '++id, businessId, timezone, dateFormat, currency, createdAt'
     });
   }

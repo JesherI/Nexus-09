@@ -4,7 +4,7 @@ import NeuralParticles from "../components/NeuralParticles";
 import { db, PosSettings } from "../database";
 
 interface PosSetupPageProps {
-  businessId: number;
+  businessId: string;
   onPosSetup: () => void;
   onBack: () => void;
 }

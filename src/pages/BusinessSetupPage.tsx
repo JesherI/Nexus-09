@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import NeuralParticles from "../components/NeuralParticles";
-import { db, Business } from "../database";
+import { FirebaseServices } from "../services/firebaseServices";
 
 interface BusinessSetupPageProps {
-  onBusinessSetup: (businessId: number) => void;
+  onBusinessSetup: (businessId: string) => void;
   onBack: () => void;
 }
 
@@ -54,7 +54,7 @@ function BusinessSetupPage({ onBusinessSetup, onBack }: BusinessSetupPageProps) 
         });
       }
 
-      const business: Business = {
+      const businessData = {
         name: formData.name,
         location: formData.location,
         website: formData.website || undefined,
@@ -64,8 +64,8 @@ function BusinessSetupPage({ onBusinessSetup, onBack }: BusinessSetupPageProps) 
         createdAt: new Date(),
       };
 
-      const businessId = await db.businesses.add(business);
-      onBusinessSetup(businessId as number);
+      const businessId = await FirebaseServices.registerBusiness(businessData);
+      onBusinessSetup(businessId);
     } catch (error) {
       console.error('Error creating business:', error);
       // Handle error, maybe show message

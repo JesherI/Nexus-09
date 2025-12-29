@@ -83,30 +83,32 @@ const handleUserSelect = (user: User) => {
          <div className="absolute bottom-20 left-20 h-[300px] w-[300px] rounded-full decoration-tertiary opacity-40 decoration-blur-secondary"></div>
        </div>
 
-{/* User Profile Section - Windows Style */}
-      <div className="mb-12 flex flex-col items-center" style={{ zIndex: 2 }}>
-        {/* User Icon - Large and Centered */}
-        <div className="relative">
-         <div className="w-32 h-32 md:w-40 md:h-40 rounded-full login-profile-container flex items-center justify-center overflow-hidden shadow-2xl mb-4 mx-auto hover:scale-[1.02] transition-all duration-300">
-           {selectedUser?.profileImage ? (
-             <img src={selectedUser.profileImage} alt={t('login.profile')} className="w-full h-full object-cover" />
-           ) : (
-             <svg className="w-20 h-20 md:w-24 md:h-24 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-             </svg>
-           )}
+ {/* User Profile Section - Windows Style */}
+       <div className="mb-12 flex flex-col items-center" style={{ zIndex: 2 }}>
+         {/* User Icon - Large and Centered */}
+         <div className="relative">
+          <div className="w-32 h-32 md:w-40 md:h-40 rounded-full login-profile-container flex items-center justify-center overflow-hidden shadow-2xl mb-4 mx-auto">
+            {selectedUser?.profileImage ? (
+              <img src={selectedUser.profileImage} alt={t('login.profile')} className="w-full h-full object-cover" />
+            ) : (
+              <svg className="w-20 h-20 md:w-24 md:h-24 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
+            )}
           </div>
-          
-          {/* User Name */}
-          {selectedUser && (
- <h2 className="text-3xl md:text-4xl font-bold text-center text-enhanced">
-              {selectedUser.nombre} {selectedUser.apellidoPaterno}
-            </h2>
-          )}
-        </div>
+
+           {/* User Name */}
+           {selectedUser && (
+             <h2 className="text-3xl md:text-4xl font-bold text-center text-enhanced">
+               {selectedUser.nombre} {selectedUser.apellidoPaterno}
+             </h2>
+           )}
 
 
-      </div>
+         </div>
+
+
+       </div>
 
 {/* User List Dropdown */}
       {showUserList && (
@@ -182,15 +184,27 @@ const handleUserSelect = (user: User) => {
         </form>
       </div>
 
-        {/* Clear Data Button - Below Sign In Form */}
-       <div className="mt-8 text-center" style={{ zIndex: 2 }}>
-         <button
-           onClick={handleClearData}
-           className="text-red-400 hover:text-red-300 text-sm transition-colors underline"
-         >
-            {t('login.clearAllData')}
-         </button>
-       </div>
+         {/* Clear Data Button - Below Sign In Form */}
+        <div className="mt-8 text-center" style={{ zIndex: 2 }}>
+          <button
+            onClick={handleClearData}
+            className="text-red-400 hover:text-red-300 text-sm transition-colors underline"
+          >
+             {t('login.clearAllData')}
+          </button>
+        </div>
+
+        {/* Change User Button - Bottom Left */}
+        {users.length > 1 && (
+          <div className="absolute bottom-8 left-8 z-50">
+            <button
+              onClick={() => setShowUserList(!showUserList)}
+              className="px-4 py-2 glass rounded-lg hover:scale-105 transition-all duration-300 shadow-lg text-sm"
+            >
+              Cambiar Usuario
+            </button>
+          </div>
+        )}
 
        {/* Power Off Button - Bottom Right */}
        <div className="absolute bottom-8 right-8 z-50">
