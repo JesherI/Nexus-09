@@ -28,6 +28,7 @@ export interface BusinessData {
   ownerIds: string[]; // Array of owner UIDs
   adminIds: string[]; // Array of admin UIDs
   cashierIds: string[]; // Array of cashier UIDs
+  subscriptionId?: string; // Reference to subscription
 }
 
 export interface OwnerData {
@@ -56,10 +57,71 @@ export interface UserData {
   lastLogin?: Date;
 }
 
+export type SubscriptionPlan = 'core' | 'business' | 'intelligence' | 'lab';
+
+export interface Subscription {
+  id?: string;
+  businessId: string;
+  plan: SubscriptionPlan;
+  status: 'active' | 'inactive' | 'cancelled';
+  startDate: Date;
+  endDate?: Date;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 export class FirebaseServices {
-  // Business registration
-  static async registerBusiness(businessData: Omit<BusinessData, 'ownerIds' | 'id'>): Promise<string> {
+  // Check if business already exists
+  static async checkBusinessExists(name: string, phone: string, email?: string): Promise<BusinessData | null> {
     try {
+      // Check by name
+      const nameQuery = query(collection(firestore, 'businesses'), where('name', '==', name));
+      const nameSnapshot = await getDocs(nameQuery);
+      if (!nameSnapshot.empty) {
+        return nameSnapshot.docs[0].data() as BusinessData;
+      }
+
+      // Check by phone
+      const phoneQuery = query(collection(firestore, 'businesses'), where('phone', '==', phone));
+      const phoneSnapshot = await getDocs(phoneQuery);
+      if (!phoneSnapshot.empty) {
+        return phoneSnapshot.docs[0].data() as BusinessData;
+      }
+
+      // Check by email if provided
+      if (email) {
+        const emailQuery = query(collection(firestore, 'businesses'), where('email', '==', email));
+        const emailSnapshot = await getDocs(emailQuery);
+        if (!emailSnapshot.empty) {
+          return emailSnapshot.docs[0].data() as BusinessData;
+        }
+      }
+
+      return null;
+    } catch (error) {
+      console.error('Error checking business existence:', error);
+      throw new Error('Failed to check business existence');
+    }
+  }
+
+  // Business registration
+  static async registerBusiness(businessData: {
+    name: string;
+    location: string;
+    website?: string;
+    email?: string;
+    phone: string;
+    logo?: string;
+    createdAt: Date;
+  }): Promise<{ id: string; isExisting: boolean }> {
+    try {
+      // Check if business already exists
+      const existingBusiness = await this.checkBusinessExists(businessData.name, businessData.phone, businessData.email);
+      if (existingBusiness) {
+        // Return existing business ID without saving
+        return { id: existingBusiness.id!, isExisting: true };
+      }
+
       const businessRef = doc(collection(firestore, 'businesses'));
        const businessWithId = {
          ...businessData,
@@ -78,7 +140,7 @@ export class FirebaseServices {
       });
 
       await setDoc(businessRef, filteredBusiness);
-      return businessRef.id;
+      return { id: businessRef.id, isExisting: false };
     } catch (error) {
       console.error('Error registering business:', error);
       throw new Error('Failed to register business');
@@ -296,6 +358,12 @@ export class FirebaseServices {
   // Register any user in Firebase Auth and Firestore
   static async registerUser(userData: UserData, password: string): Promise<{ user: FirebaseUser }> {
     try {
+      // Check if business exists
+      const businessExists = await this.getBusiness(userData.businessId);
+      if (!businessExists) {
+        throw new Error('Business does not exist');
+      }
+
       // Check if email already exists
       const emailQuery = query(collection(firestore, 'users'), where('email', '==', userData.email));
       const emailSnapshot = await getDocs(emailQuery);
@@ -412,6 +480,79 @@ export class FirebaseServices {
     } catch (error) {
       console.error('Error getting business users:', error);
       throw new Error('Failed to get business users');
+    }
+  }
+
+  // Create a subscription for a business
+  static async createSubscription(subscriptionData: Omit<Subscription, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> {
+    try {
+      const subscriptionRef = doc(collection(firestore, 'subscriptions'));
+      const subscriptionWithId = {
+        ...subscriptionData,
+        id: subscriptionRef.id,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
+
+      const filteredSubscription: any = {};
+      Object.keys(subscriptionWithId).forEach(key => {
+        if (subscriptionWithId[key as keyof typeof subscriptionWithId] !== undefined) {
+          filteredSubscription[key] = subscriptionWithId[key as keyof typeof subscriptionWithId];
+        }
+      });
+
+      await setDoc(subscriptionRef, filteredSubscription);
+
+      // Update business with subscription ID
+      await this.linkSubscriptionToBusiness(subscriptionData.businessId, subscriptionRef.id);
+
+      return subscriptionRef.id;
+    } catch (error) {
+      console.error('Error creating subscription:', error);
+      throw new Error('Failed to create subscription');
+    }
+  }
+
+  // Get subscription by business ID
+  static async getSubscriptionByBusinessId(businessId: string): Promise<Subscription | null> {
+    try {
+      const subscriptionQuery = query(collection(firestore, 'subscriptions'), where('businessId', '==', businessId));
+      const subscriptionSnapshot = await getDocs(subscriptionQuery);
+      if (!subscriptionSnapshot.empty) {
+        const doc = subscriptionSnapshot.docs[0];
+        return { id: doc.id, ...doc.data() } as Subscription;
+      }
+      return null;
+    } catch (error) {
+      console.error('Error getting subscription:', error);
+      throw new Error('Failed to get subscription');
+    }
+  }
+
+  // Update subscription
+  static async updateSubscription(subscriptionId: string, updates: Partial<Omit<Subscription, 'id' | 'businessId' | 'createdAt'>>): Promise<void> {
+    try {
+      const subscriptionRef = doc(firestore, 'subscriptions', subscriptionId);
+      await updateDoc(subscriptionRef, {
+        ...updates,
+        updatedAt: new Date()
+      });
+    } catch (error) {
+      console.error('Error updating subscription:', error);
+      throw new Error('Failed to update subscription');
+    }
+  }
+
+  // Link subscription to business
+  static async linkSubscriptionToBusiness(businessId: string, subscriptionId: string): Promise<void> {
+    try {
+      const businessRef = doc(firestore, 'businesses', businessId);
+      await updateDoc(businessRef, {
+        subscriptionId: subscriptionId
+      });
+    } catch (error) {
+      console.error('Error linking subscription to business:', error);
+      throw new Error('Failed to link subscription to business');
     }
   }
 }
