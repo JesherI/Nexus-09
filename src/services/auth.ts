@@ -1,6 +1,7 @@
 import { db, User, UserType } from '../database';
 import { hashPassword, verifyPassword } from '../utils/auth';
 import { FirebaseServices } from './firebaseServices';
+import { SecureSessionService } from './secureSessionService';
 
 export class AuthService {
   static async isFirstTime(): Promise<boolean> {
@@ -74,8 +75,9 @@ export class AuthService {
       phone: userData.phone,
       email: userData.email,
       password: hashedPassword,
-      profileImage: userData.profileImage,
+      profileImageId: undefined, // Will be set after file upload
       type: userType,
+      isActive: true,
       createdAt: new Date()
     };
 
@@ -107,7 +109,9 @@ export class AuthService {
     return { ...localUser, id };
   }
 
- static async login(email: string, password: string): Promise<{ user: User }> {
+  static async login(email: string, password: string, deviceId?: string): Promise<{ user: User; session: any }> {
+    let user: User | null = null;
+
     // Try Firebase login first
     try {
       const { user: firebaseUser, userData } = await FirebaseServices.loginUser(email, password);
@@ -122,8 +126,9 @@ export class AuthService {
           phone: userData.phone,
           email: userData.email,
           password: '', // Not stored for Firebase users
-          profileImage: userData.profileImage,
+          profileImageId: userData.profileImage, // Will be migrated to file storage later
           type: userData.type as UserType,
+          isActive: true,
           createdAt: userData.createdAt,
           lastLogin: userData.lastLogin
         };
@@ -133,7 +138,7 @@ export class AuthService {
         if (existingLocalUser) {
           await db.users.update(existingLocalUser.id!, {
             lastLogin: new Date(),
-            profileImage: userData.profileImage
+            profileImageId: userData.profileImage // Will be migrated to file storage later
           });
           localUser.id = existingLocalUser.id;
         } else {
@@ -144,70 +149,63 @@ export class AuthService {
           localUser.id = id;
         }
 
-        return { user: localUser };
+        user = localUser;
       }
     } catch (firebaseError) {
       console.error('Firebase login failed:', firebaseError);
       // Fall back to local login
     }
 
-    // Local login fallback
-    const user = await db.users.where('email').equals(email).first();
+    // Local login fallback if Firebase failed
+    if (!user) {
+      const localUser = await db.users.where('email').equals(email).first();
 
-    if (!user || !verifyPassword(password, user.password)) {
-      throw new Error('Invalid email or password');
-    }
-
-    // Update last login
-    await db.users.update(user.id!, { lastLogin: new Date() });
-
-    return { user };
-  }
-
- static async getCurrentUser(): Promise<User | null> {
-    const storedToken = await this.getStoredToken();
-    if (storedToken) {
-      try {
-        // Parse stored user data
-        const userData = JSON.parse(storedToken);
-        // Verify user still exists in local DB
-        const user = await db.users.get(userData.id);
-        if (user) {
-          return user;
-        }
-      } catch (error) {
-        console.error('Error getting current user:', error);
+      if (!localUser || !verifyPassword(password, localUser.password)) {
+        throw new Error('Invalid email or password');
       }
+
+      // Update last login
+      await db.users.update(localUser.id!, { lastLogin: new Date() });
+      user = localUser;
     }
+
+    if (!user) {
+      throw new Error('Login failed');
+    }
+
+    // Create secure session
+    const session = await SecureSessionService.createSession(user, deviceId);
+
+    // Store tokens securely
+    SecureSessionService.storeTokens(session.accessToken, session.refreshToken);
+
+    return { user, session };
+  }
+
+  static async getCurrentUser(): Promise<User | null> {
+    return await SecureSessionService.getCurrentUser();
+  }
+
+  static async logout(): Promise<void> {
+    await SecureSessionService.logout();
+  }
+
+  static async updateProfile(userId: string, profileImageId: string): Promise<void> {
+    await db.users.update(userId, { profileImageId });
+  }
+
+  // Legacy methods - kept for backward compatibility but deprecated
+  static async getStoredToken(): Promise<string | null> {
+    console.warn('getStoredToken is deprecated. Use SecureSessionService instead.');
     return null;
   }
 
-static async logout(): Promise<void> {
-    // Limpiar todas las sesiones activas
-    await db.sessions.clear();
-  }
-
-  static async updateProfile(userId: string, profileImage: string): Promise<void> {
-    await db.users.update(userId, { profileImage });
-  }
-
-static async getStoredToken(): Promise<string | null> {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('authToken');
-    }
-    return null;
-  }
-
- static async storeToken(userData: User): Promise<void> {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('authToken', JSON.stringify(userData));
-    }
+  static async storeToken(): Promise<void> {
+    console.warn('storeToken is deprecated. Use SecureSessionService instead.');
   }
 
   static async removeStoredToken(): Promise<void> {
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('authToken');
-    }
+    console.warn('removeStoredToken is deprecated. Use SecureSessionService instead.');
   }
 
 static async getAllUsers(): Promise<User[]> {
@@ -216,6 +214,35 @@ static async getAllUsers(): Promise<User[]> {
 
   static async clearAllSessions(): Promise<void> {
     await db.sessions.clear();
+  }
+
+  // Secure session management methods
+  static async refreshToken(): Promise<{ accessToken: string; refreshToken: string } | null> {
+    const storedTokens = SecureSessionService.getStoredTokens();
+    if (!storedTokens) return null;
+
+    const newTokens = await SecureSessionService.refreshAccessToken(storedTokens.refreshToken);
+    if (newTokens) {
+      SecureSessionService.storeTokens(newTokens.accessToken, newTokens.refreshToken);
+    }
+    return newTokens;
+  }
+
+  static async validateSession(): Promise<boolean> {
+    const session = await SecureSessionService.getCurrentSession();
+    return session !== null && session.isActive;
+  }
+
+  static async checkSessionTimeout(): Promise<boolean> {
+    return await SecureSessionService.checkSessionTimeout();
+  }
+
+  static async extendSession(): Promise<void> {
+    await SecureSessionService.extendSession();
+  }
+
+  static async invalidateAllUserSessions(userId: string): Promise<void> {
+    await SecureSessionService.invalidateAllUserSessions(userId);
   }
 
   static async syncFirebaseUsers(): Promise<void> {
@@ -240,8 +267,9 @@ static async getAllUsers(): Promise<User[]> {
               phone: userData.phone,
               email: userData.email,
               password: '', // Firebase users don't store password locally
-              profileImage: userData.profileImage,
+              profileImageId: userData.profileImage, // Will be migrated to file storage later
               type: userData.type as UserType,
+              isActive: true,
               createdAt: userData.createdAt,
               lastLogin: userData.lastLogin
             });
