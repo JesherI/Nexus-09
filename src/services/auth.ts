@@ -1,5 +1,5 @@
 import { db, User, UserType } from '../database';
-import { hashPassword, verifyPassword } from '../utils/auth';
+import { hashPassword, verifyPassword, verifyPasswordLegacy, hashPin, verifyPin } from '../utils/auth';
 import { FirebaseServices } from './firebaseServices';
 import { SecureSessionService } from './secureSessionService';
 
@@ -16,6 +16,7 @@ export class AuthService {
     phone: string;
     email: string;
     password: string;
+    pin?: string; // Optional PIN for POS operations
     profileImage?: string;
     type?: UserType; // Make optional - will be determined automatically
     currentUserRole?: UserType; // Role of the current user making the registration
@@ -65,7 +66,8 @@ export class AuthService {
       }
     }
 
-    const hashedPassword = hashPassword(userData.password);
+    const hashedPassword = await hashPassword(userData.password);
+    const hashedPin = userData.pin ? await hashPin(userData.pin) : undefined;
 
     const newUser: User = {
       businessId: businessId,
@@ -75,6 +77,7 @@ export class AuthService {
       phone: userData.phone,
       email: userData.email,
       password: hashedPassword,
+      pinHash: hashedPin,
       profileImageId: undefined, // Will be set after file upload
       type: userType,
       isActive: true,
@@ -144,7 +147,7 @@ export class AuthService {
         } else {
           const id = await db.users.add({
             ...localUser,
-            password: hashPassword(password) // Store hashed password for offline login
+            password: await hashPassword(password) // Store hashed password for offline login
           });
           localUser.id = id;
         }
@@ -160,7 +163,25 @@ export class AuthService {
     if (!user) {
       const localUser = await db.users.where('email').equals(email).first();
 
-      if (!localUser || !verifyPassword(password, localUser.password)) {
+      if (!localUser) {
+        throw new Error('Invalid email or password');
+      }
+
+      // Check password - try Argon2 first, then legacy SHA256 for migration
+      let isValid = false;
+      try {
+        isValid = await verifyPassword(password, localUser.password);
+      } catch (error) {
+        // Try legacy verification
+        isValid = verifyPasswordLegacy(password, localUser.password);
+        if (isValid) {
+          // Migrate to Argon2
+          const newHash = await hashPassword(password);
+          await db.users.update(localUser.id!, { password: newHash });
+        }
+      }
+
+      if (!isValid) {
         throw new Error('Invalid email or password');
       }
 
@@ -176,8 +197,9 @@ export class AuthService {
     // Create secure session
     const session = await SecureSessionService.createSession(user, deviceId);
 
-    // Store tokens securely
-    SecureSessionService.storeTokens(session.accessToken, session.refreshToken);
+    // Store tokens securely (access token in memory, refresh token encrypted)
+    SecureSessionService.setAccessToken(session.accessToken);
+    await SecureSessionService.storeTokens(session.accessToken, session.refreshToken);
 
     return { user, session };
   }
@@ -187,6 +209,7 @@ export class AuthService {
   }
 
   static async logout(): Promise<void> {
+    SecureSessionService.clearAccessToken();
     await SecureSessionService.logout();
   }
 
@@ -218,12 +241,13 @@ static async getAllUsers(): Promise<User[]> {
 
   // Secure session management methods
   static async refreshToken(): Promise<{ accessToken: string; refreshToken: string } | null> {
-    const storedTokens = SecureSessionService.getStoredTokens();
-    if (!storedTokens) return null;
+    const refreshToken = await SecureSessionService.getStoredRefreshToken();
+    if (!refreshToken) return null;
 
-    const newTokens = await SecureSessionService.refreshAccessToken(storedTokens.refreshToken);
+    const newTokens = await SecureSessionService.refreshAccessToken(refreshToken);
     if (newTokens) {
-      SecureSessionService.storeTokens(newTokens.accessToken, newTokens.refreshToken);
+      SecureSessionService.setAccessToken(newTokens.accessToken);
+      await SecureSessionService.storeTokens(newTokens.accessToken, newTokens.refreshToken);
     }
     return newTokens;
   }
@@ -279,5 +303,22 @@ static async getAllUsers(): Promise<User[]> {
     } catch (error) {
       console.error('Error syncing Firebase users:', error);
     }
+  }
+
+  // PIN management for POS operations
+  static async setUserPin(userId: string, pin: string): Promise<void> {
+    if (pin.length < 4 || pin.length > 6 || !/^\d+$/.test(pin)) {
+      throw new Error('PIN must be 4-6 digits');
+    }
+
+    const hashedPin = await hashPin(pin);
+    await db.users.update(userId, { pinHash: hashedPin });
+  }
+
+  static async verifyUserPin(userId: string, pin: string): Promise<boolean> {
+    const user = await db.users.get(userId);
+    if (!user || !user.pinHash) return false;
+
+    return await verifyPin(pin, user.pinHash);
   }
 }

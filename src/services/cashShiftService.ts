@@ -1,5 +1,6 @@
 import { db, CashShift } from '../database';
 import { InventoryServices } from './inventoryServices';
+import { AuthService } from './auth';
 
 export interface ShiftSummary {
   shiftId: string;
@@ -63,7 +64,8 @@ export class CashShiftService {
   static async openShift(
     registerId: string,
     userId: string,
-    openingCash: number
+    openingCash: number,
+    pin?: string
   ): Promise<string> {
     const register = await db.cashRegisters.get(registerId);
     if (!register) {
@@ -75,6 +77,11 @@ export class CashShiftService {
     }
 
     await InventoryServices.requirePermission(userId, 'cashier.open_drawer', register.businessId);
+
+    // Validate PIN for POS operation
+    if (!pin || !(await AuthService.verifyUserPin(userId, pin))) {
+      throw new Error('Invalid PIN required for opening shift');
+    }
 
     // Check if user already has an open shift
     const existingShift = await db.cashShifts
@@ -115,6 +122,7 @@ export class CashShiftService {
     shiftId: string,
     userId: string,
     actualCash: number,
+    pin?: string,
     notes?: string
   ): Promise<ShiftSummary> {
     const shift = await db.cashShifts.get(shiftId);
@@ -131,6 +139,11 @@ export class CashShiftService {
     }
 
     await InventoryServices.requirePermission(userId, 'cashier.close_shift', shift.businessId);
+
+    // Validate PIN for POS operation
+    if (!pin || !(await AuthService.verifyUserPin(userId, pin))) {
+      throw new Error('Invalid PIN required for closing shift');
+    }
 
     // Calculate shift summary
     const summary = await this.calculateShiftSummary(shiftId);

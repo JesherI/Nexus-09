@@ -23,6 +23,7 @@ export interface User {
   phone: string;
   email: string;
   password: string; // hashed password
+  pinHash?: string; // hashed PIN for POS operations
   profileImageId?: string; // reference to fileStorage
   profileImage?: string; // deprecated - for migration only
   type: UserType;
@@ -36,8 +37,7 @@ export interface Session {
   userId: string;
   deviceId: string;
   deviceFingerprint: string;
-  accessToken: string;
-  refreshToken: string;
+  // Tokens removed for security - stored encrypted separately
   createdAt: Date;
   expiresAt: Date;
   lastActivity: Date;
@@ -362,10 +362,10 @@ class AppDatabase extends Dexie {
   constructor() {
     super('NexusAppDB');
 
-    this.version(18).stores({
+    this.version(20).stores({
       users: 'id, email, phone, type, isActive, createdAt, lastLogin',
       businesses: 'id, name, location, phone, createdAt',
-      sessions: 'id, userId, deviceId, accessToken, refreshToken, createdAt, expiresAt, lastActivity, isActive, invalidatedAt',
+      sessions: 'id, userId, deviceId, createdAt, expiresAt, lastActivity, isActive, invalidatedAt',
       posSettings: '++id, businessId, timezone, dateFormat, currency, createdAt',
       departments: 'id, businessId, name, isActive, createdAt',
       products: 'id, businessId, name, [businessId+barcode], departmentId, type, isActive, createdAt, updatedAt',

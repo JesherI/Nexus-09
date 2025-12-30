@@ -7,7 +7,10 @@ export class SecureSessionService {
   private static readonly SHIFT_TIMEOUT = 8 * 60 * 60 * 1000; // 8 hours
   private static readonly INACTIVITY_TIMEOUT = 30 * 60 * 1000; // 30 minutes
 
-  static async createSession(user: User, deviceId?: string): Promise<Session> {
+  // In-memory storage for access token (not persisted)
+  private static currentAccessToken: string | null = null;
+
+  static async createSession(user: User, deviceId?: string): Promise<Session & { accessToken: string; refreshToken: string }> {
     const sessionId = crypto.randomUUID();
     const actualDeviceId = deviceId || generateDeviceId();
     const deviceFingerprint = getDeviceFingerprint();
@@ -41,13 +44,11 @@ export class SecureSessionService {
     const accessToken = await createJWT(accessPayload);
     const refreshToken = await createJWT(refreshPayload);
 
-    // Create session record
+    // Create session record (tokens not stored in DB for security)
     const session: Session = {
       userId: user.id!,
       deviceId: actualDeviceId,
       deviceFingerprint,
-      accessToken,
-      refreshToken,
       createdAt: now,
       expiresAt: refreshExpiry,
       lastActivity: now,
@@ -59,7 +60,11 @@ export class SecureSessionService {
     const sessionIdDb = await db.sessions.add(session);
     session.id = sessionIdDb.toString();
 
-    return session;
+    return {
+      ...session,
+      accessToken,
+      refreshToken
+    };
   }
 
   static async validateAccessToken(token: string): Promise<JWTPayload | null> {
@@ -123,14 +128,31 @@ export class SecureSessionService {
   }
 
   static async getCurrentSession(): Promise<Session | null> {
-    const storedTokens = this.getStoredTokens();
-    if (!storedTokens) return null;
+    const refreshToken = await this.getStoredRefreshToken();
+    if (!refreshToken) return null;
 
-    const payload = await this.validateAccessToken(storedTokens.accessToken);
-    if (!payload) return null;
+    // Check if we have a valid access token in memory
+    const accessToken = this.getAccessToken();
+    if (accessToken) {
+      const payload = await this.validateAccessToken(accessToken);
+      if (payload) {
+        const session = await db.sessions.get(payload.sessionId);
+        return session || null;
+      }
+    }
 
-    const session = await db.sessions.get(payload.sessionId);
-    return session || null;
+    // No valid access token, try to refresh
+    const newTokens = await this.refreshAccessToken(refreshToken);
+    if (newTokens) {
+      this.setAccessToken(newTokens.accessToken);
+      const payload = await this.validateAccessToken(newTokens.accessToken);
+      if (payload) {
+        const session = await db.sessions.get(payload.sessionId);
+        return session || null;
+      }
+    }
+
+    return null;
   }
 
   static async getCurrentUser(): Promise<User | null> {
@@ -152,7 +174,8 @@ export class SecureSessionService {
       }
     }
 
-    this.clearStoredTokens();
+    this.clearAccessToken();
+    await this.clearStoredTokens();
   }
 
   static async invalidateSession(sessionId: string): Promise<void> {
@@ -199,27 +222,120 @@ export class SecureSessionService {
     }
   }
 
-  // Storage methods (secure localStorage with encryption)
-  static getStoredTokens(): { accessToken: string; refreshToken: string } | null {
-    try {
-      const encrypted = localStorage.getItem('secure_session');
-      if (!encrypted) return null;
+  // In-memory access token management
+  static setAccessToken(token: string): void {
+    this.currentAccessToken = token;
+  }
 
-      // In production, decrypt the tokens
-      return JSON.parse(encrypted);
+  static getAccessToken(): string | null {
+    return this.currentAccessToken;
+  }
+
+  static clearAccessToken(): void {
+    this.currentAccessToken = null;
+  }
+
+  // Storage methods (secure encrypted storage)
+  static async getStoredRefreshToken(): Promise<string | null> {
+    try {
+      const encryptedData = localStorage.getItem('secure_session');
+      if (!encryptedData) return null;
+
+      const data = JSON.parse(encryptedData);
+      if (!data.encryptedRefreshToken || !data.iv || !data.userId) return null;
+
+      // Derive key from device fingerprint + user ID
+      const key = await this.deriveEncryptionKey(data.userId);
+
+      // Decrypt refresh token
+      const refreshToken = await this.decryptToken(data.encryptedRefreshToken, data.iv, key);
+      return refreshToken;
     } catch (error) {
-      console.error('Error reading stored tokens:', error);
+      console.error('Error reading stored refresh token:', error);
       return null;
     }
   }
 
-  static storeTokens(accessToken: string, refreshToken: string): void {
-    const tokens = { accessToken, refreshToken };
-    // In production, encrypt these tokens
-    localStorage.setItem('secure_session', JSON.stringify(tokens));
+  static async storeTokens(_accessToken: string, refreshToken: string): Promise<void> {
+    try {
+      // Get current user to derive key
+      const currentSession = await this.getCurrentSession();
+      if (!currentSession) return;
+
+      // Derive key from device fingerprint + user ID
+      const key = await this.deriveEncryptionKey(currentSession.userId);
+
+      // Encrypt refresh token
+      const { encrypted: encryptedRefreshToken, iv } = await this.encryptToken(refreshToken, key);
+
+      const data = {
+        userId: currentSession.userId,
+        encryptedRefreshToken,
+        iv: Array.from(iv), // Convert Uint8Array to array for JSON storage
+        deviceFingerprint: currentSession.deviceFingerprint,
+        createdAt: new Date().toISOString()
+      };
+
+      localStorage.setItem('secure_session', JSON.stringify(data));
+    } catch (error) {
+      console.error('Error storing tokens:', error);
+    }
   }
 
-  private static clearStoredTokens(): void {
+  private static async deriveEncryptionKey(userId: string): Promise<CryptoKey> {
+    const deviceFingerprint = getDeviceFingerprint();
+    const keyMaterial = `${deviceFingerprint}:${userId}`;
+
+    const keyData = await crypto.subtle.importKey(
+      'raw',
+      new TextEncoder().encode(keyMaterial),
+      'PBKDF2',
+      false,
+      ['deriveKey']
+    );
+
+    return crypto.subtle.deriveKey(
+      {
+        name: 'PBKDF2',
+        salt: new TextEncoder().encode('nexus-session-salt'),
+        iterations: 100000,
+        hash: 'SHA-256'
+      },
+      keyData,
+      { name: 'AES-GCM', length: 256 },
+      false,
+      ['encrypt', 'decrypt']
+    );
+  }
+
+  private static async encryptToken(token: string, key: CryptoKey): Promise<{ encrypted: string; iv: Uint8Array }> {
+    const iv = crypto.getRandomValues(new Uint8Array(12)); // 96 bits for GCM
+    const encrypted = await crypto.subtle.encrypt(
+      { name: 'AES-GCM', iv },
+      key,
+      new TextEncoder().encode(token)
+    );
+
+    return {
+      encrypted: btoa(String.fromCharCode(...new Uint8Array(encrypted))),
+      iv
+    };
+  }
+
+  private static async decryptToken(encryptedToken: string, iv: number[], key: CryptoKey): Promise<string> {
+    const encrypted = Uint8Array.from(atob(encryptedToken), c => c.charCodeAt(0));
+    const ivArray = new Uint8Array(iv);
+
+    const decrypted = await crypto.subtle.decrypt(
+      { name: 'AES-GCM', iv: ivArray },
+      key,
+      encrypted
+    );
+
+    return new TextDecoder().decode(decrypted);
+  }
+
+  private static async clearStoredTokens(): Promise<void> {
     localStorage.removeItem('secure_session');
   }
 

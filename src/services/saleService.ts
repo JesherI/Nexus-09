@@ -1,6 +1,7 @@
 import { db, Sale, SaleItem, Payment, PaymentMethod, Product } from '../database';
 import { InventoryServices } from './inventoryServices';
 import { CashShiftService } from './cashShiftService';
+import { AuthService } from './auth';
 import { FiscalService } from './fiscalService';
 
 export interface CartItem {
@@ -225,7 +226,7 @@ export class SaleService {
     return { sale, items, payments };
   }
 
-  static async cancelSale(saleId: string, userId: string, reason?: string): Promise<void> {
+  static async cancelSale(saleId: string, userId: string, pin?: string, reason?: string): Promise<void> {
     const sale = await db.sales.get(saleId);
     if (!sale) {
       throw new Error('Sale not found');
@@ -233,6 +234,11 @@ export class SaleService {
 
     if (sale.paymentStatus === 'completed') {
       await InventoryServices.requirePermission(userId, 'sales.cancel', sale.businessId);
+
+      // Validate PIN for POS operation
+      if (!pin || !(await AuthService.verifyUserPin(userId, pin))) {
+        throw new Error('Invalid PIN required for cancelling sale');
+      }
     }
 
     // Update sale status
@@ -258,13 +264,18 @@ export class SaleService {
     );
   }
 
-  static async refundSale(saleId: string, refundAmount: number, userId: string, reason?: string): Promise<void> {
+  static async refundSale(saleId: string, refundAmount: number, userId: string, pin?: string, reason?: string): Promise<void> {
     const sale = await db.sales.get(saleId);
     if (!sale) {
       throw new Error('Sale not found');
     }
 
     await InventoryServices.requirePermission(userId, 'sales.refund', sale.businessId);
+
+    // Validate PIN for POS operation
+    if (!pin || !(await AuthService.verifyUserPin(userId, pin))) {
+      throw new Error('Invalid PIN required for refunding sale');
+    }
 
     if (sale.paymentStatus !== 'completed') {
       throw new Error('Can only refund completed sales');

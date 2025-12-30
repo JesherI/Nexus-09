@@ -4,18 +4,160 @@ import { JWTPayload } from '../database';
 const SECRET_KEY = 'nexus-app-secret-key-2024';
 const JWT_SECRET = 'nexus-pos-secure-key-2025'; // Should be from environment variables in production
 
-// Legacy password hashing (keeping for backward compatibility)
-export const hashPassword = (password: string): string => {
+// Modern PBKDF2 password hashing (using Web Crypto API)
+// Note: Will be upgraded to Argon2 via Tauri backend in future
+export const hashPassword = async (password: string): Promise<string> => {
+  const salt = new Uint8Array(16);
+  crypto.getRandomValues(salt);
+
+  const keyMaterial = await crypto.subtle.importKey(
+    'raw',
+    new TextEncoder().encode(password),
+    'PBKDF2',
+    false,
+    ['deriveBits']
+  );
+
+  const key = await crypto.subtle.deriveBits(
+    {
+      name: 'PBKDF2',
+      salt: salt,
+      iterations: 100000,
+      hash: 'SHA-256'
+    },
+    keyMaterial,
+    256
+  );
+
+  const hashArray = new Uint8Array(key);
+  const hashBase64 = btoa(String.fromCharCode(...hashArray));
+  const saltBase64 = btoa(String.fromCharCode(...salt));
+
+  return `pbkdf2:${saltBase64}:${hashBase64}`;
+};
+
+export const verifyPassword = async (password: string, hashedPassword: string): Promise<boolean> => {
+  try {
+    if (!hashedPassword.startsWith('pbkdf2:')) {
+      // Legacy SHA256 verification for migration
+      return verifyPasswordLegacy(password, hashedPassword);
+    }
+
+    const parts = hashedPassword.split(':');
+    if (parts.length !== 3) return false;
+
+    const salt = Uint8Array.from(atob(parts[1]), c => c.charCodeAt(0));
+    const expectedHash = atob(parts[2]);
+
+    const keyMaterial = await crypto.subtle.importKey(
+      'raw',
+      new TextEncoder().encode(password),
+      'PBKDF2',
+      false,
+      ['deriveBits']
+    );
+
+    const key = await crypto.subtle.deriveBits(
+      {
+        name: 'PBKDF2',
+        salt: salt,
+        iterations: 100000,
+        hash: 'SHA-256'
+      },
+      keyMaterial,
+      256
+    );
+
+    const hashArray = new Uint8Array(key);
+    const hashBase64 = btoa(String.fromCharCode(...hashArray));
+
+    return hashBase64 === expectedHash;
+  } catch (error) {
+    return false;
+  }
+};
+
+// Legacy password hashing (keeping for backward compatibility during migration)
+export const hashPasswordLegacy = (password: string): string => {
   return CryptoJS.SHA256(password + SECRET_KEY).toString();
+};
+
+export const verifyPasswordLegacy = (password: string, hashedPassword: string): boolean => {
+  const hashed = hashPasswordLegacy(password);
+  return hashed === hashedPassword;
+};
+
+// PIN hashing for POS operations (4-6 digits)
+export const hashPin = async (pin: string): Promise<string> => {
+  const salt = new Uint8Array(8); // Smaller salt for PIN
+  crypto.getRandomValues(salt);
+
+  const keyMaterial = await crypto.subtle.importKey(
+    'raw',
+    new TextEncoder().encode(pin),
+    'PBKDF2',
+    false,
+    ['deriveBits']
+  );
+
+  const key = await crypto.subtle.deriveBits(
+    {
+      name: 'PBKDF2',
+      salt: salt,
+      iterations: 50000, // Fewer iterations for faster PIN verification
+      hash: 'SHA-256'
+    },
+    keyMaterial,
+    128 // 16 bytes for PIN hash
+  );
+
+  const hashArray = new Uint8Array(key);
+  const hashBase64 = btoa(String.fromCharCode(...hashArray));
+  const saltBase64 = btoa(String.fromCharCode(...salt));
+
+  return `pin:${saltBase64}:${hashBase64}`;
+};
+
+export const verifyPin = async (pin: string, hashedPin: string): Promise<boolean> => {
+  try {
+    if (!hashedPin.startsWith('pin:')) return false;
+
+    const parts = hashedPin.split(':');
+    if (parts.length !== 3) return false;
+
+    const salt = Uint8Array.from(atob(parts[1]), c => c.charCodeAt(0));
+    const expectedHash = atob(parts[2]);
+
+    const keyMaterial = await crypto.subtle.importKey(
+      'raw',
+      new TextEncoder().encode(pin),
+      'PBKDF2',
+      false,
+      ['deriveBits']
+    );
+
+    const key = await crypto.subtle.deriveBits(
+      {
+        name: 'PBKDF2',
+        salt: salt,
+        iterations: 50000,
+        hash: 'SHA-256'
+      },
+      keyMaterial,
+      128
+    );
+
+    const hashArray = new Uint8Array(key);
+    const hashBase64 = btoa(String.fromCharCode(...hashArray));
+
+    return hashBase64 === expectedHash;
+  } catch (error) {
+    return false;
+  }
 };
 
 export const generateToken = (): string => {
   return CryptoJS.lib.WordArray.random(32).toString();
-};
-
-export const verifyPassword = (password: string, hashedPassword: string): boolean => {
-  const hashed = hashPassword(password);
-  return hashed === hashedPassword;
 };
 
 // JWT Utilities
