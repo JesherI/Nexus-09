@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import NeuralParticles from "../components/NeuralParticles";
-import { FirebaseServices } from "../services/firebaseServices";
+import { FirebaseServices } from "../services/firebase/firebaseServices";
 
 interface BusinessSetupPageProps {
   onBusinessSetup: (businessId: string) => void;

@@ -1,6 +1,6 @@
-import { db, CashShift } from '../database';
-import { InventoryServices } from './inventoryServices';
-import { AuthService } from './auth';
+import { db, CashShift } from '../../db';
+import { InventoryServices } from '../inventory/inventoryServices';
+import { AuthService } from '../auth/auth';
 
 export interface ShiftSummary {
   shiftId: string;

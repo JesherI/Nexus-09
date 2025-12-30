@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import NeuralParticles from "../components/NeuralParticles";
-import { db, PosSettings } from "../database";
+import { db, PosSettings } from "../db";
 
 interface PosSetupPageProps {
   businessId: string;

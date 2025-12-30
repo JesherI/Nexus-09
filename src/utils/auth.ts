@@ -1,5 +1,5 @@
 import CryptoJS from 'crypto-js';
-import { JWTPayload } from '../database';
+import { JWTPayload } from '../db';
 
 const SECRET_KEY = 'nexus-app-secret-key-2024';
 const JWT_SECRET = 'nexus-pos-secure-key-2025'; // Should be from environment variables in production

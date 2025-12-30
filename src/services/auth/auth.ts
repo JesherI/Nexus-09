@@ -1,6 +1,6 @@
-import { db, User, UserType } from '../database';
-import { hashPassword, verifyPassword, verifyPasswordLegacy, hashPin, verifyPin } from '../utils/auth';
-import { FirebaseServices } from './firebaseServices';
+import { db, User, UserType } from '../../db';
+import { hashPassword, verifyPassword, verifyPasswordLegacy, hashPin, verifyPin } from '../../utils/auth';
+import { FirebaseServices } from '../firebase/firebaseServices';
 import { SecureSessionService } from './secureSessionService';
 
 export class AuthService {
@@ -272,7 +272,7 @@ static async getAllUsers(): Promise<User[]> {
   static async syncFirebaseUsers(): Promise<void> {
     try {
       // Get current user from Firebase Auth state
-      const { auth } = await import('../firebase');
+      const { auth } = await import('../../firebase');
       const currentFirebaseUser = auth.currentUser;
       if (currentFirebaseUser) {
         // Check if user exists locally

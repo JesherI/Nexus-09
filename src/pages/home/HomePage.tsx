@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import LanguageSelector from '../../components/LanguageSelector';
 import ThemeToggle from '../../components/ThemeToggle';
-import { AuthService } from '../../services/auth';
-import { User, UserType } from '../../database';
+import { AuthService } from '../../services/auth/auth';
+import { User, UserType } from '../../db';
 import { useTranslation } from 'react-i18next';
 
 interface HomePageProps {

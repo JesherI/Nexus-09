@@ -7,9 +7,9 @@ import PosSetupPage from "./pages/PosSetupPage";
 import SignUpPage from "./pages/SignUpPage";
 import LoginPage from "./pages/LoginPage";
 import HomePage from "./pages/home/HomePage";
-import { AuthService } from "./services/auth";
+import { AuthService } from "./services/auth/auth";
 import { ThemeProvider } from "./contexts/ThemeContext";
-import { UserType, User, db } from "./database";
+import { UserType, User, db } from "./db";
 import { invoke } from "@tauri-apps/api/core";
 
 type Page = 'loading' | 'start' | 'business' | 'pos' | 'signup' | 'login' | 'home';
@@ -103,7 +103,7 @@ useEffect(() => {
 const handleLogout = async () => {
     try {
       // Logout from Firebase
-      const { FirebaseServices } = await import('./services/firebaseServices');
+      const { FirebaseServices } = await import('./services/firebase/firebaseServices');
       await FirebaseServices.logout();
       // Limpiar sesión local
       await AuthService.removeStoredToken();

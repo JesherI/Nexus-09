@@ -1,8 +1,8 @@
-import { db, Sale, SaleItem, Payment, PaymentMethod, Product } from '../database';
-import { InventoryServices } from './inventoryServices';
+import { db, Sale, SaleItem, Payment, PaymentMethod, Product } from '../../db';
+import { InventoryServices } from '../inventory/inventoryServices';
 import { CashShiftService } from './cashShiftService';
-import { AuthService } from './auth';
-import { FiscalService } from './fiscalService';
+import { AuthService } from '../auth/auth';
+import { FiscalService } from '../fiscal/fiscalService';
 
 export interface CartItem {
   productId: string;

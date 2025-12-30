@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { AuthService } from '../services/auth';
-import { User, db } from '../database';
+import { AuthService } from '../services/auth/auth';
+import { User, db } from '../db';
 import NeuralParticles from '../components/NeuralParticles';
 import { useTranslation } from 'react-i18next';
 

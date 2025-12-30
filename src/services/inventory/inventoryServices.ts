@@ -1,7 +1,7 @@
-import { db, Department, Product, Service, InventoryMovement, Permission, PermissionAssignment, AuditLog, TaxType } from '../database';
+import { db, Department, Product, Service, InventoryMovement, Permission, PermissionAssignment, AuditLog, TaxType } from '../../db';
 
-import { FileStorageService } from './fileStorageService';
-import { PriceService } from './priceService';
+import { FileStorageService } from '../files/fileStorageService';
+import { PriceService } from '../pricing/priceService';
 
 export class InventoryServices {
   // Department methods

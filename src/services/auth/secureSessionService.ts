@@ -1,5 +1,5 @@
-import { db, Session, User, JWTPayload } from '../database';
-import { createJWT, verifyJWT, getDeviceFingerprint, generateDeviceId } from '../utils/auth';
+import { db, Session, User, JWTPayload } from '../../db';
+import { createJWT, verifyJWT, getDeviceFingerprint, generateDeviceId } from '../../utils/auth';
 
 export class SecureSessionService {
   private static readonly ACCESS_TOKEN_EXPIRY = 15 * 60 * 1000; // 15 minutes
@@ -46,6 +46,7 @@ export class SecureSessionService {
 
     // Create session record (tokens not stored in DB for security)
     const session: Session = {
+      id: generateDeviceId(),
       userId: user.id!,
       deviceId: actualDeviceId,
       deviceFingerprint,
@@ -57,8 +58,7 @@ export class SecureSessionService {
       userAgent: navigator.userAgent
     };
 
-    const sessionIdDb = await db.sessions.add(session);
-    session.id = sessionIdDb.toString();
+    await db.sessions.add(session);
 
     return {
       ...session,
